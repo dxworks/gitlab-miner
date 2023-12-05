@@ -1,0 +1,1013 @@
+{
+  "project": {
+    "name": "octopus",
+    "issues": {
+      "nodes": [
+        {
+          "title": "Problem with the Tutorial: Magnons"
+        },
+        {
+          "title": "Spin-resolved TD calculation causes Segmentation fault"
+        },
+        {
+          "title": "DFT+U with Gamma-point only and AOLoewdin=yes gives a segfault"
+        },
+        {
+          "title": "Fix ranks that open files in external_waves"
+        },
+        {
+          "title": "Simplify mock_autotools.cmake"
+        },
+        {
+          "title": "Parser error for time-dependent calculation"
+        },
+        {
+          "title": "[autotools] BerkeleyGW isnt detected properly in mpi toolchain"
+        },
+        {
+          "title": "Chebyshv filtering and k-point parallelization"
+        },
+        {
+          "title": "Enable Chebyshev filtering eigensolver for state parallelization"
+        },
+        {
+          "title": "Scissors operator is slow"
+        },
+        {
+          "title": "remove libxc4 support in the code"
+        },
+        {
+          "title": "remove libxc4 builders"
+        },
+        {
+          "title": "update functionals list"
+        },
+        {
+          "title": "Problems with the testsuite: finite_systems_3d"
+        },
+        {
+          "title": "OpenMP overhead of small 1D example"
+        },
+        {
+          "title": "Problems with the testsuite: periodic_systems"
+        },
+        {
+          "title": "Consistent treatment of tolerances for zeros"
+        },
+        {
+          "title": "Redudant if"
+        },
+        {
+          "title": "Problems with the testsuite: linear_response"
+        },
+        {
+          "title": "Problems with the testsuite: LDA_U"
+        },
+        {
+          "title": "Problems with the testsuite: functionals"
+        },
+        {
+          "title": "Follow up of MR2228"
+        },
+        {
+          "title": "support SymmetryBreakDir for more than one directions"
+        },
+        {
+          "title": "Bug in the testsuite app"
+        },
+        {
+          "title": "Tests of functional/03-xc.XXX should not write restart"
+        },
+        {
+          "title": "Problems with the testsuite: components"
+        },
+        {
+          "title": "Problems with the testuite: finite_system_2d"
+        },
+        {
+          "title": "Problems with the testsuite: finite_system_1d"
+        },
+        {
+          "title": "Can't get HHG from acceleration or total_current file"
+        },
+        {
+          "title": "Remove redundant branch `master`"
+        },
+        {
+          "title": "Cuda memcheck for MPI+OpenMP"
+        },
+        {
+          "title": "CMake: Integrate with CDash"
+        },
+        {
+          "title": "Change external_waves_eval to handle any necessary prefactors to the fields"
+        },
+        {
+          "title": "Consolidate E and B field related enumerators"
+        },
+        {
+          "title": "Implement mesh_function_correction for getting derivatives of functions that are non-zero at the boundaries"
+        },
+        {
+          "title": "Enable E, B and A fields from external sources"
+        },
+        {
+          "title": "Cant detect futile when openmp is disabled"
+        },
+        {
+          "title": "Improve photon initializers"
+        },
+        {
+          "title": "Error handling for restart"
+        },
+        {
+          "title": "Electron and photons should be disentangled"
+        },
+        {
+          "title": "Wrong behavior at the deadlock when systems cannot expose quantities"
+        },
+        {
+          "title": "CMake: Migrate documentation from Cristian's repo to Octopus Hugo"
+        },
+        {
+          "title": "CMake: Create CUDA and openCL presets"
+        },
+        {
+          "title": "Refactoring: Rename routine states_elec_null"
+        },
+        {
+          "title": "Refactoring: Remove HAVE_SCALAPACK from states_elec_t"
+        },
+        {
+          "title": "Refactoring: Collate MPI communicator groups in states_elec_t"
+        },
+        {
+          "title": "Refactoring: Move modelmbparticles out of states_elec_t"
+        },
+        {
+          "title": "Refactoring: Move current quantities out of `states_elec_t`"
+        },
+        {
+          "title": "Refactoring: Collate current quantities into an object"
+        },
+        {
+          "title": "Refactoring: Remove state distribution information in `states_elec_t`, duplicated in dist"
+        },
+        {
+          "title": "Write a history of runs"
+        },
+        {
+          "title": "Run clang-tidy to remove whitespaces"
+        },
+        {
+          "title": "Broken pspio m4"
+        },
+        {
+          "title": "CMake: Implement performance tests"
+        },
+        {
+          "title": "Add version number to parser.log"
+        },
+        {
+          "title": "Improve documentation, fix sections and remove unused variables."
+        },
+        {
+          "title": "Improve Maxwell output log"
+        },
+        {
+          "title": "Enable GS calculation mode for multisystems and check that Restart and RestartOptions work"
+        },
+        {
+          "title": "Improve multisystem user experience"
+        },
+        {
+          "title": "Remove code paths of pspio"
+        },
+        {
+          "title": "Remove code paths of libfm"
+        },
+        {
+          "title": "Add version number to netcdf"
+        },
+        {
+          "title": "CP - Maxwell: exp_mid_2tep and Lorentz force do not work together"
+        },
+        {
+          "title": "Several tests fail"
+        },
+        {
+          "title": "error: use of undeclared identifier 'int64_t'"
+        },
+        {
+          "title": "remove unused imports in our code."
+        },
+        {
+          "title": "Add version number to parser.log"
+        },
+        {
+          "title": "Multisystem Restart - Folder Copying required"
+        },
+        {
+          "title": "Transformation not defined for more than 3 dimensions on GPU"
+        },
+        {
+          "title": "NaN energies during optical conductivity calculation (update: parser issue leading to default values used, defaults are insufficient)"
+        },
+        {
+          "title": "Change lalg_inverse to have optional sizes instead of mandatory one"
+        },
+        {
+          "title": "Change the default inversion method to be SVD"
+        },
+        {
+          "title": "Use input_unit, output_unit and error_unit from iso_fortran_env"
+        },
+        {
+          "title": "Remove io_assign and replace it by newunit"
+        },
+        {
+          "title": "Maxwell tests are failing on GPUs"
+        },
+        {
+          "title": "Maxwell quadrupole potential in GPUs"
+        },
+        {
+          "title": "Almadi SIC with spinors should be forbiden"
+        },
+        {
+          "title": "Ionic motion and vector potential"
+        },
+        {
+          "title": "BLAS and Lapack calls should have a contiguous flag."
+        },
+        {
+          "title": "poisson_solve default value for the optional argument all_nodes should be changed"
+        },
+        {
+          "title": "MPI: (Meta-Issue) Systematic MPI Wrapper Design"
+        },
+        {
+          "title": "List of broken links"
+        },
+        {
+          "title": "Reference needed in documentation for Amaldi and Perdue-Zunger self-interaction corrections"
+        },
+        {
+          "title": "Mesh init stage2 fails for the following input"
+        },
+        {
+          "title": "Broken link on the website"
+        },
+        {
+          "title": "Constant parameters in src/opt_control/target.F90 should be written in upper case"
+        },
+        {
+          "title": "Wrong documentation in states_elec_group"
+        },
+        {
+          "title": "Imaginary part for spin off-diagonal potential"
+        },
+        {
+          "title": "Total energy is wrong with the magnetic dipole term"
+        },
+        {
+          "title": "Improve spline_cutoff_radius"
+        },
+        {
+          "title": "Workdir should be settable at runtime for HPC environments"
+        },
+        {
+          "title": "Documentation should specify the list of species for which spin-orbit coupling is available"
+        },
+        {
+          "title": "Installation of Octopus on Perlmutter NERSC"
+        },
+        {
+          "title": "Chebyshev filtering and orbital dependent functionals"
+        },
+        {
+          "title": "Write more information on clocks for the web pages"
+        },
+        {
+          "title": "Remove FLOAT and CMPLX macros"
+        },
+        {
+          "title": "electron-photon interaction with only dipole self energy"
+        },
+        {
+          "title": "rename ldpsi1/2 in batch_get_points_accel routines"
+        },
+        {
+          "title": "Store  input file hash for reproducibility"
+        },
+        {
+          "title": "Plane output with non-orthogonal cells"
+        }
+      ]
+    },
+    "mergeRequests": {
+      "nodes": [
+        {
+          "title": "Draft: update tolerances for cuda-mpi-omp",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": false
+        },
+        {
+          "title": "Draft: Update tolerances cuda-mpi-omp",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": false
+        },
+        {
+          "title": "Move the space component from interaction_partner_t to the actual systems",
+          "author": {
+            "name": "Micael Oliveira"
+          },
+          "approved": true
+        },
+        {
+          "title": "Draft: Macros: CNST removal",
+          "author": {
+            "name": "Alex Buccheri"
+          },
+          "approved": false
+        },
+        {
+          "title": "Spack builder tolerances: round2",
+          "author": {
+            "name": "Ashwin"
+          },
+          "approved": true
+        },
+        {
+          "title": "Envelope bessel xwave",
+          "author": {
+            "name": "Ilke Albar"
+          },
+          "approved": false
+        },
+        {
+          "title": "Fix more runtime warnings (temp arrays)",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "All-to-all exchange of batches",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "update tolerances for new builders",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Introduces a class for handling ring-pattern communications",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "fix: Wrong MPI macro",
+          "author": {
+            "name": "Cristian Le"
+          },
+          "approved": true
+        },
+        {
+          "title": "Merge CMake Improvements",
+          "author": {
+            "name": "Alex Buccheri"
+          },
+          "approved": true
+        },
+        {
+          "title": "revert eigensolver change",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "next round of contiguous flags",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "BerkeleyGW 3.0",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "SCDM for PZ-SIC",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "Fixes a bug in the generation of the random vectors for Chebyshev.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "corrected wrong comments",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Making some long tests much faster.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Forbid to call MPI inside OpenMP regions.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Update for libxc6 support",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Update kli-mgga test",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": false
+        },
+        {
+          "title": "Fix some Maxwell couplings with MPI",
+          "author": {
+            "name": "Franco Bonafé"
+          },
+          "approved": true
+        },
+        {
+          "title": "Catching MPI errors.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Enable Chebyshev par states",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": false
+        },
+        {
+          "title": "Draft: Update debian rules and debian packaging information",
+          "author": {
+            "name": "Ashwin"
+          },
+          "approved": false
+        },
+        {
+          "title": "Laplacian fix - part 1",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Draft: The FFT Poisson solver 3D-0D was not correct for non-orthogonal cells. The...",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Enable all EM fields from the external source",
+          "author": {
+            "name": "Franco Bonafé"
+          },
+          "approved": false
+        },
+        {
+          "title": "Introduce generic iteration counters in multisystem framework",
+          "author": {
+            "name": "Micael Oliveira"
+          },
+          "approved": false
+        },
+        {
+          "title": "Fix compiler names detection",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fix spack tolerance (Serial_min)",
+          "author": {
+            "name": "Ashwin"
+          },
+          "approved": true
+        },
+        {
+          "title": "Refactor: Encapsulation of state_elec_t attributes \"modelmb data\"",
+          "author": {
+            "name": "Alex Buccheri"
+          },
+          "approved": false
+        },
+        {
+          "title": "Solve Maxwell memcheck on GPUs",
+          "author": {
+            "name": "Franco Bonafé"
+          },
+          "approved": false
+        },
+        {
+          "title": "Reduce temp array creation warnings",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Improve AVX macro for FMA",
+          "author": {
+            "name": "Cristian Le"
+          },
+          "approved": true
+        },
+        {
+          "title": "Add preserve_mat to X(matrix_norm2) and X(singular_value_decomp)",
+          "author": {
+            "name": "Henri Menke"
+          },
+          "approved": true
+        },
+        {
+          "title": "Helmholtz decomposition non coulomb gauge",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": true
+        },
+        {
+          "title": "Maxwell user exp doc",
+          "author": {
+            "name": "Ilke Albar"
+          },
+          "approved": true
+        },
+        {
+          "title": "Add documentation and refactor distributed_init",
+          "author": {
+            "name": "Alex Buccheri"
+          },
+          "approved": true
+        },
+        {
+          "title": "Clean Maxwell documentation and variables",
+          "author": {
+            "name": "Carlos Bustamante"
+          },
+          "approved": true
+        },
+        {
+          "title": "Enable GS calculation if one electronic system is present and use it in a test",
+          "author": {
+            "name": "Franco Bonafé"
+          },
+          "approved": true
+        },
+        {
+          "title": "Resolve \"List of broken links\"",
+          "author": {
+            "name": "Ashwin"
+          },
+          "approved": true
+        },
+        {
+          "title": "Adding the contiguous flag to MPI interfaces.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Blas/Lapack contiguous flag",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "Move variables from states_elec_dim to states_elec",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Add documentation for LatticeVectors",
+          "author": {
+            "name": "Ilke Albar"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fixing compiler warnings 2",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Add test for static magnetic field 2d gauge",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": true
+        },
+        {
+          "title": "Resolve \"Add version number to parser.log\"",
+          "author": {
+            "name": "Ashwin"
+          },
+          "approved": true
+        },
+        {
+          "title": "Issue Update atomic masses in element.dat",
+          "author": {
+            "name": "Sebastian de la Pena"
+          },
+          "approved": true
+        },
+        {
+          "title": "Optimized hamiltonian_elec_base_nlocal_force",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fix many compiler warnings about exact real equalities.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Renamed hamiltonian_elec_update2 to hamiltonian_elec_update_with_ext_pot",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": true
+        },
+        {
+          "title": "Draft: Remove  CONTRIBUTING in favour of Contributing.md",
+          "author": {
+            "name": "Alex Buccheri"
+          },
+          "approved": false
+        },
+        {
+          "title": "message_fatal was called before message definition",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fix shebang of build-time Perl script",
+          "author": {
+            "name": "Henri Menke"
+          },
+          "approved": true
+        },
+        {
+          "title": "Add preserve_mat to X(matrix_norm2) and X(singular_value_decomp)",
+          "author": {
+            "name": "Henri Menke"
+          },
+          "approved": false
+        },
+        {
+          "title": "Fix a segfault for Intel compiler in certain cases. This is unclear why this occurs.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Allow for running a kick in lower dimension than 3.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "Added np argument for batch_set_zero",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": true
+        },
+        {
+          "title": "Removed calc_physical_current routine",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": true
+        },
+        {
+          "title": "remove duplicated file in tutorials",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "n-excited_el with Houston states",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "updated tolerances for valgrind 2022b",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fix uninitialized variable in dftbp",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Add spglib 2.1.0 source",
+          "author": {
+            "name": "Cristian Le"
+          },
+          "approved": false
+        },
+        {
+          "title": "Fix a missing private index flagged by Intel Inspector.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Spglib: Use modern interface",
+          "author": {
+            "name": "Cristian Le"
+          },
+          "approved": true
+        },
+        {
+          "title": "fix uninitialized variable",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fix debug trace",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "OpenMP m4 for Intel compilers",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "address mpi_debug problem",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fix gdlib",
+          "author": {
+            "name": "Micael Oliveira"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fixes a race condition in the kernel batch_dotpv.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "Fix dangerous code",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Improve testsuite script",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fix  tolerance for spack builders",
+          "author": {
+            "name": "Ashwin"
+          },
+          "approved": true
+        },
+        {
+          "title": "fix seg fault in mpi_debug",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Draft: fix m4 for libvdwxc",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": false
+        },
+        {
+          "title": "updated tolerances",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Improves a page of the manual.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "make the runtime warning extractor more compact",
+          "author": {
+            "name": "Henning Glawe"
+          },
+          "approved": true
+        },
+        {
+          "title": "shift for Bessel",
+          "author": {
+            "name": "Ilke Albar"
+          },
+          "approved": true
+        },
+        {
+          "title": "Change the script to avoid printing duplicated lines in the file runtime_warnings.log.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fixes to FBEx for spin-polarized electrons",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Several changes to make the multisystem algorithms fully generic",
+          "author": {
+            "name": "Micael Oliveira"
+          },
+          "approved": true
+        },
+        {
+          "title": "Runtime warnings from the testsuite",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "replaced zff_linear with dff_linear for real type",
+          "author": {
+            "name": "Francesco Troisi"
+          },
+          "approved": true
+        },
+        {
+          "title": "Remove macros",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Draft: Fixes a warning and activate more tests on GPUs.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "Fixes PUSH/POP_SUB",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Fix sign of quadrupolar term and add test",
+          "author": {
+            "name": "Franco Bonafé"
+          },
+          "approved": true
+        },
+        {
+          "title": "Prepare foss 2022b",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "Simplify Maxwell external source",
+          "author": {
+            "name": "Micael Oliveira"
+          },
+          "approved": true
+        },
+        {
+          "title": "Splines now store their own cutoff radius",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": false
+        },
+        {
+          "title": "Low magnetization density treatment for LSDA with spinors",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "Minor improvements of the slater potential.",
+          "author": {
+            "name": "Nicolas Tancogne-Dejean"
+          },
+          "approved": true
+        },
+        {
+          "title": "more comments for density_oct_m",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        },
+        {
+          "title": "corrections to the propagator documentation",
+          "author": {
+            "name": "Martin Lueders"
+          },
+          "approved": true
+        }
+      ]
+    }
+  }
+}
