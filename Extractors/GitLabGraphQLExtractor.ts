@@ -46,34 +46,38 @@ export class GitLabGraphQLExtractor {
     }
   }
 
-  private async executeQueries(client: GitLabGraphQLClient, queries: string[], tokenIndex: number): Promise<void> {
-    for (let queryIndex = 0; queryIndex < queries.length; queryIndex++) {
-      const query = queries[queryIndex];
+  private async executeQueries(config: AppConfig, queries: string[]): Promise<void> {
+    try {
 
-      try {
-        const result = await client.executeQuery(query);
-        const filename = `result_${tokenIndex + 1}_${queryIndex + 1}.json`;
-        await fs.writeFile(filename, JSON.stringify(result, null, 2));
-        
-        console.log(`Query ${queryIndex + 1} result saved to ${filename}`);
-      } catch (error) {
-        console.error(`Error executing query ${queryIndex + 1}:`, error);
+      for (let queryIndex = 0; queryIndex < queries.length; queryIndex++) {
+        const query = queries[queryIndex];
+
+        try {
+          let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+          let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+
+          const result = await client.executeQuery(query);
+          const filename = `result_${queryIndex + 1}.json`;
+
+          await fs.writeFile(filename, JSON.stringify(result, null, 2));
+          console.log(`Query ${queryIndex + 1} result saved to ${filename}`);
+        } catch (error) {
+          console.error(`Error executing query ${queryIndex + 1}:`, error);
+        }
       }
+    } catch (error) {
+      console.error('Error executing queries:', error);
     }
   }
 
   async run(): Promise<void> {
     try {
       const config = await this.readConfig();
-      const gitlabApiUrl = config.gitlabApiUrl;
-      const projectFullPath = config.projectFullPath;
-      const tokens = config.tokens;
-
       const queries: string[] = [];
 
       const Query_GI = `
         {
-          project(fullPath: "${projectFullPath}") {
+          project(fullPath: "${config.projectFullPath}") {
             id
             name
             path
@@ -115,7 +119,7 @@ export class GitLabGraphQLExtractor {
   
       const Query_2 = `
       {
-        project(fullPath: "${projectFullPath}") {
+        project(fullPath: "${config.projectFullPath}") {
           name
           issues {
             nodes {
@@ -138,12 +142,8 @@ export class GitLabGraphQLExtractor {
       queries.push(Query_GI);
       queries.push(Query_2);
 
-      for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
-        const token = tokens[tokenIndex];
-        const client = new GitLabGraphQLClient(gitlabApiUrl, token);
+      await this.executeQueries(config, queries);
 
-        await this.executeQueries(client, queries, tokenIndex);
-      }
     } catch (error) {
       console.error('Error running Application:', error);
     }
