@@ -46,106 +46,193 @@ export class GitLabGraphQLExtractor {
     }
   }
 
-  private async executeQueries(config: AppConfig, queries: string[]): Promise<void> {
-    try {
+  async getMergeRequests(cursor: string | null) {
+    const config = await this.readConfig();
 
-      for (let queryIndex = 0; queryIndex < queries.length; queryIndex++) {
-        const query = queries[queryIndex];
-
-        try {
-          let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
-          let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
-
-          const result = await client.executeQuery(query);
-          const filename = `result_${queryIndex + 1}.json`;
-
-          await fs.writeFile(filename, JSON.stringify(result, null, 2));
-          console.log(`Query ${queryIndex + 1} result saved to ${filename}`);
-        } catch (error) {
-          console.error(`Error executing query ${queryIndex + 1}:`, error);
+    const query = `
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        mergeRequests(first: 100, after: ${cursor}) {
+          edges {
+            node {
+              title
+              iid
+            }
+            cursor
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
         }
       }
-    } catch (error) {
-      console.error('Error executing queries:', error);
     }
-  }
-
-  async run(): Promise<void> {
-    try {
-      const config = await this.readConfig();
-      const queries: string[] = [];
-
-      const Query_GI = `
-        {
-          project(fullPath: "${config.projectFullPath}") {
-            id
-            name
-            path
-            fullPath
-            webUrl
-            createdAt
-            lastActivityAt
-            archived
-            group {
-              fullName
-              fullPath
-              id
-              projectsCount
-              description
-            }
-            namespace {
-              fullName
-              fullPath
-              id
-              totalRepositorySize
-              description
-            }
-            codeCoverageSummary {
-              averageCoverage
-              coverageCount
-              lastUpdatedOn
-            }
-            languages {
-              name
-              share
-            }
-            description
-            topics
-            openIssuesCount
-            openMergeRequestsCount
-          }
-        }
-      `;
-  
-      const Query_2 = `
-      {
-        project(fullPath: "${config.projectFullPath}") {
-          name
-          issues {
-            nodes {
-              title
-            }
-          }
-          mergeRequests {
-            nodes {
-              title
-              author {
-                name
-              }
-              approved
-            }
-          }
-        }
-      }
     `;
-  
-      queries.push(Query_GI);
-      queries.push(Query_2);
 
-      await this.executeQueries(config, queries);
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
 
-    } catch (error) {
-      console.error('Error running Application:', error);
-    }
+    let result = await client.executeQuery(query);
+
+    let mergeRequests = result.project.mergeRequests;
+    let hasNextPage = result.project.mergeRequests.pageInfo.hasNextPage;
+    let endCursor = result.project.mergeRequests.pageInfo.endCursor;
+
+    return {mergeRequests, hasNextPage, endCursor};
   }
+
+  //     const Query_GI = `
+  //       {
+  //         project(fullPath: "${config.projectFullPath}") {
+  //           id
+  //           name
+  //           path
+  //           fullPath
+  //           webUrl
+  //           createdAt
+  //           lastActivityAt
+  //           archived
+  //           group {
+  //             fullName
+  //             fullPath
+  //             id
+  //             projectsCount
+  //             description
+  //           }
+  //           namespace {
+  //             fullName
+  //             fullPath
+  //             id
+  //             totalRepositorySize
+  //             description
+  //           }
+  //           codeCoverageSummary {
+  //             averageCoverage
+  //             coverageCount
+  //             lastUpdatedOn
+  //           }
+  //           languages {
+  //             name
+  //             share
+  //           }
+  //           description
+  //           topics
+  //           openIssuesCount
+  //           openMergeRequestsCount
+  //         }
+  //       }
+  //     `;
+  
+    //   const Query_2 = `
+    //   {
+    //     project(fullPath: "octopus-code/octopus") {
+    //       mergeRequests(first: 3) {
+    //         nodes {
+    //           approvalsRequired
+    //           approved
+    //           approvedBy {
+    //             nodes {
+    //               username
+    //             }
+    //           }
+    //           assignees {
+    //             nodes {
+    //               username
+    //             }
+    //           }
+    //           author {
+    //             username
+    //           }
+    //           commenters {
+    //             nodes {
+    //               username
+    //             }
+    //           }
+    //           commitCount
+    //           commits {
+    //             nodes {
+    //               sha
+    //             }
+    //           }
+    //           commitsWithoutMergeCommits {
+    //             nodes {
+    //               sha
+    //             }
+    //           }
+    //           committers {
+    //             nodes {
+    //               username
+    //             }
+    //           }
+    //           conflicts
+    //           createdAt
+    //           description
+    //           diffStatsSummary {
+    //             changes
+    //             fileCount
+    //             additions
+    //             deletions
+    //           }
+    //           discussions {
+    //             nodes {
+    //               id
+    //             }
+    //           }
+    //           downvotes
+    //           draft
+    //           humanTimeEstimate
+    //           humanTotalTimeSpent
+    //           id
+    //           iid
+    //           labels {
+    //             nodes {
+    //               title
+    //             }
+    //           }
+    //           mergeError
+    //           mergeOngoing
+    //           mergeStatusEnum
+    //           mergeUser {
+    //             username
+    //           }
+    //           mergeable
+    //           mergeableDiscussionsState
+    //           mergedAt
+    //           participants {
+    //             nodes {
+    //               username
+    //             }
+    //           }
+    //           preparedAt
+    //           reviewers {
+    //             nodes {
+    //               username
+    //             }
+    //           }
+    //           state
+    //           taskCompletionStatus {
+    //             completedCount
+    //             count
+    //           }
+    //           timeEstimate
+    //           timelogs {
+    //             nodes {
+    //               timeSpent
+    //             }
+    //           }
+    //           title
+    //           totalTimeSpent
+    //           updatedAt
+    //           upvotes
+    //           userDiscussionsCount
+    //           userNotesCount
+    //           userPermissions {
+    //             canMerge
+    //           }
+    //           webUrl
+    //         }
+    //        }
+    //     }
+    //   }
+    // `;
 }
