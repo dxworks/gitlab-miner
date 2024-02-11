@@ -78,14 +78,14 @@ export class GitLabGraphQLExtractor {
     let endCursor = result.project.mergeRequests.pageInfo.endCursor;
 
     for (let mergeRequest of mergeRequests.edges) {
-      let mergeRequestInfo = await this.getMergeRequestInfo(mergeRequest.node.iid);
+      let mergeRequestInfo = await this.fetchMergeRequestInfo(mergeRequest.node.iid);
       mergeRequest.node.info = mergeRequestInfo;
     }
 
     return {mergeRequests, hasNextPage, endCursor};
   }
 
-  async getMergeRequestInfo(mergeRequestIid: number) {
+  async fetchMergeRequestInfo(mergeRequestIid: number) {
     const config = await this.readConfig();
 
     const query = `
@@ -128,20 +128,6 @@ export class GitLabGraphQLExtractor {
             }
           }
           commitCount
-          commits(first: 100) {
-            nodes {
-              author {
-                id
-              }
-              authoredDate
-              committedDate
-              description
-              fullTitle
-              id
-              message
-              title
-            }
-          }
           committers {
             nodes {
               id
@@ -155,44 +141,6 @@ export class GitLabGraphQLExtractor {
             fileCount
             additions
             deletions
-          }
-          discussions(first: 100) {
-            nodes {
-              createdAt
-              id
-              notes {
-                count
-                nodes {
-                  author {
-                    id
-                  }
-                  authorIsContributor
-                  body
-                  createdAt
-                  id
-                  internal
-                  lastEditedAt
-                  lastEditedBy {
-                    id
-                  }
-                  resolvable
-                  resolved
-                  resolvedAt
-                  resolvedBy {
-                    id
-                  }
-                  system
-                  updatedAt
-                }
-              }
-              replyId
-              resolvable
-              resolved
-              resolvedAt
-              resolvedBy {
-                id
-              }
-            }
           }
           downvotes
           draft
@@ -258,9 +206,86 @@ export class GitLabGraphQLExtractor {
     let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
     let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
 
-    let result = await client.executeQuery(query);
+    let mergeRequestInfoResult = await client.executeQuery(query);
+    let mergeRequestInfo = mergeRequestInfoResult.project.mergeRequest;
 
-    return result.project.mergeRequest;
+    let commitsResult = await this.fetchCommitsAndDiscussions(mergeRequestIid);
+    mergeRequestInfo.commits = commitsResult.project.mergeRequest.commits;
+    mergeRequestInfo.discussions = commitsResult.project.mergeRequest.discussions;
+
+    return mergeRequestInfo;
+  }
+
+  async fetchCommitsAndDiscussions(mergeRequestIid: number) {
+    const config = await this.readConfig();
+
+    const query = `
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        mergeRequest(iid: "${mergeRequestIid}") {
+          commits {
+            nodes {
+                author {
+                  id
+                }
+                authoredDate
+                committedDate
+                description
+                fullTitle
+                id
+                message
+                title
+            }
+          }
+          discussions {
+            nodes {
+              createdAt
+              id
+              notes {
+                count
+                nodes {
+                  author {
+                    id
+                  }
+                  authorIsContributor
+                  body
+                  createdAt
+                  id
+                  internal
+                  lastEditedAt
+                  lastEditedBy {
+                    id
+                  }
+                  resolvable
+                  resolved
+                  resolvedAt
+                  resolvedBy {
+                    id
+                  }
+                  system
+                  updatedAt
+                }
+              }
+              replyId
+              resolvable
+              resolved
+              resolvedAt
+              resolvedBy {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+    `;
+
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+
+    let commitsAndDiscussionsResult = await client.executeQuery(query);
+
+    return commitsAndDiscussionsResult;
   }
 
   async getIssues() {
@@ -407,14 +432,14 @@ export class GitLabGraphQLExtractor {
     let issues = result.project.issues.nodes;
 
     for (let issue of issues) {
-      let relatedMergeRequests = await this.getRelatedMergeRequests(issue.iid);
+      let relatedMergeRequests = await this.fetchRelatedMergeRequests(issue.iid);
       issue.relatedMergeRequests = relatedMergeRequests;
     }
 
     return issues;
   }
 
-  async getRelatedMergeRequests(issueIid: number) {
+  async fetchRelatedMergeRequests(issueIid: number) {
     const config = await this.readConfig();
 
     const query = `
