@@ -288,137 +288,128 @@ export class GitLabGraphQLExtractor {
     return commitsAndDiscussionsResult;
   }
 
-  async getIssues() {
+  async getIssues(cursor: string | null) {
     const config = await this.readConfig();
 
     const query = `
     {
       project(fullPath: "${config.projectFullPath}") {
-        issues {
-          count
-          weight
-          nodes {
-            assignees {
-              nodes {
-                id
-              }
-            }
-            author {
-              id
-            }
-            blocked
-            blockedByCount
-            blockedByIssues {
-              nodes {
-                iid
-              }
-            }
-            blockingCount
-            closedAsDuplicateOf {
-              iid
-            }
-            closedAt
-            commenters {
-              nodes {
-                id
-              }
-            }
-            confidential
-            createNoteEmail
-            createdAt
-            description
-            discussionLocked
-            discussions {
-              nodes {
-                createdAt
-                id
-                notes {
-                  count
-                  nodes {
-                    author {
-                      id
-                    }
-                    authorIsContributor
-                    body
-                    createdAt
-                    id
-                    internal
-                    lastEditedAt
-                    lastEditedBy {
-                      id
-                    }
-                    resolvable
-                    resolved
-                    resolvedAt
-                    resolvedBy {
-                      id
-                    }
-                    system
-                    updatedAt
-                  }
-                }
-                replyId
-                resolvable
-                resolved
-                resolvedAt
-                resolvedBy {
+        issues(first: 100, after: ${cursor}) {
+          edges {
+            node {
+              assignees {
+                nodes {
                   id
                 }
               }
-            }
-            downvotes
-            dueDate
-            epic {
-              iid
-            }
-            hasEpic
-            healthStatus
-            humanTimeEstimate
-            humanTotalTimeSpent
-            id
-            iid
-            iteration {
-              iid
-            }
-            labels {
-              count
-              nodes {
-                createdAt
-                description
-                id
-                lockOnMerge
-                title
-                updatedAt
-              }
-            }
-            mergeRequestsCount
-            moved
-            movedTo {
-              iid
-            }
-            participants {
-              count
-              nodes {
+              author {
                 id
               }
-            }
-            severity
-            state
-            taskCompletionStatus {
-              completedCount
-              count
-            }
-            timeEstimate
-            timelogs {
-              nodes {
-                timeSpent
+              blocked
+              blockedByCount
+              blockingCount
+              closedAsDuplicateOf {
+                iid
               }
+              closedAt
+              commenters {
+                nodes {
+                  id
+                }
+              }
+              createdAt
+              description
+              discussions {
+                nodes {
+                  createdAt
+                  id
+                  notes {
+                    count
+                    nodes {
+                      author {
+                        id
+                      }
+                      authorIsContributor
+                      body
+                      createdAt
+                      id
+                      internal
+                      lastEditedAt
+                      resolvable
+                      resolved
+                      resolvedAt
+                      resolvedBy {
+                        id
+                      }
+                      system
+                      updatedAt
+                    }
+                  }
+                  replyId
+                  resolvable
+                  resolved
+                  resolvedAt
+                  resolvedBy {
+                    id
+                  }
+                }
+              }
+              downvotes
+              dueDate
+              hasEpic
+              healthStatus
+              humanTimeEstimate
+              humanTotalTimeSpent
+              id
+              iid
+              iteration {
+                iid
+              }
+              labels {
+                count
+                nodes {
+                  createdAt
+                  description
+                  id
+                  lockOnMerge
+                  title
+                  updatedAt
+                }
+              }
+              mergeRequestsCount
+              moved
+              movedTo {
+                iid
+              }
+              participants {
+                count
+                nodes {
+                  id
+                }
+              }
+              severity
+              state
+              taskCompletionStatus {
+                completedCount
+                count
+              }
+              timeEstimate
+              timelogs {
+                nodes {
+                  timeSpent
+                }
+              }
+              title
+              totalTimeSpent
+              updatedAt
+              upvotes
+              userNotesCount
             }
-            title
-            totalTimeSpent
-            updatedAt
-            upvotes
-            userNotesCount
+            cursor
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
           }
         }
       }
@@ -429,14 +420,18 @@ export class GitLabGraphQLExtractor {
     let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
 
     let result = await client.executeQuery(query);
-    let issues = result.project.issues.nodes;
 
-    for (let issue of issues) {
+    let issues = result.project.issues;
+    let hasNextPage = result.project.issues.pageInfo.hasNextPage;
+    let endCursor = result.project.issues.pageInfo.endCursor;
+
+    for (let edge of issues.edges) {
+      let issue = edge.node;
       let relatedMergeRequests = await this.fetchRelatedMergeRequests(issue.iid);
       issue.relatedMergeRequests = relatedMergeRequests;
     }
 
-    return issues;
+    return {issues, hasNextPage, endCursor};
   }
 
   async fetchRelatedMergeRequests(issueIid: number) {
