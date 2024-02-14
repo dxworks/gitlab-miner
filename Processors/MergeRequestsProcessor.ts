@@ -5,9 +5,15 @@ import { User } from "../Types/User";
 import { ProjectInfo } from "../Types/ProjectInfo";
 import { Note } from "../Types/Note";
 import { Discussion } from "../Types/Discussion";
+import { Member } from "../Types/Member";
+import { MergeRequest } from "../Types/MergeRequest";
 
 export class MergeRequestsProcessor { 
     private extractor: GitLabGraphQLExtractor;
+    // private allData: any = {
+    //     mergeRequests: [],
+    //     projectMembers: [],
+    // };
 
     constructor(extractor: GitLabGraphQLExtractor) {
         this.extractor = extractor;
@@ -19,20 +25,41 @@ export class MergeRequestsProcessor {
         let cnt = 0;
 
         while(hasNextPage) {
-            let newMergeRequests: any = await this.extractor.getMergeRequests(endCursor);
-            allMergeRequests = allMergeRequests.concat(newMergeRequests.mergeRequests);
+            let newMergeRequests = await this.extractor.getMergeRequests(endCursor);
+            // allMergeRequests = allMergeRequests.concat(newMergeRequests.mergeRequests);
 
-            const filename = `MergeRequests_test_test.json`;
-            await fs.appendFile(filename, JSON.stringify(newMergeRequests.mergeRequests, null, 2)+ '\n');
+            let mappedMergeRequests: MergeRequest[] = [];
 
-            console.log(`Query MergeRequests result saved to ${filename}`);
+            for (let mergeRequest of newMergeRequests.mergeRequests) {
+                mappedMergeRequests.push(this.mapMergeRequest(mergeRequest.node));
+            }
+
+            allMergeRequests = allMergeRequests.concat(mappedMergeRequests);
+
+            // const filename = `MergeRequestsSimplified_toCheck.json`;
+            // await fs.appendFile(filename, JSON.stringify(mappedMergeRequests, null, 2)+ '\n');
+
+            // console.log(`Query MergeRequests result saved to ${filename}`);
             cnt++;
 
             endCursor = JSON.stringify(newMergeRequests.endCursor);
             hasNextPage = newMergeRequests.hasNextPage;
         }
+
+        //this.allData.mergeRequests.push(allMergeRequests);
+        const filename = `MR_toCheck_.json`;
+        await fs.appendFile(filename, JSON.stringify(allMergeRequests, null, 2)+ '\n');
+
+        console.log(`Query MergeRequests result saved to ${filename}`);
         console.log(cnt);
-        return cnt;
+    }
+
+    private mapMergeRequest(mergeRequest: any): MergeRequest {
+        return {
+            iid: mergeRequest.iid,
+            title: mergeRequest.title,
+            state: mergeRequest.state
+        };
     }
 
     async processIssues(endCursor: string | null) { 
@@ -211,5 +238,28 @@ export class MergeRequestsProcessor {
             topics: project.topics || [],
             visibility: project.visibility
         };
-    }    
+    }
+
+    async processProjectMembers() {
+        let projectMembers = await this.extractor.getProjectMembers();
+        let mappedMembers: Member[] = [];
+
+        for (let member of projectMembers) {
+            mappedMembers.push(this.mapProjectMember(member));
+        }
+
+        // this.allData.mergeRequests.push(mappedMembers);
+        const filename = `PM_toCheck.json`;
+        await fs.appendFile(filename, JSON.stringify(mappedMembers, null, 2)+ '\n');
+
+        console.log(`Query Users result saved to ${filename}`);
+    }
+
+    private mapProjectMember(member: any): Member {
+        return {
+            name: member.user.name,
+            username: member.user.username,
+            publicEmail: member.user.publicEmail
+        };
+    }
 }
