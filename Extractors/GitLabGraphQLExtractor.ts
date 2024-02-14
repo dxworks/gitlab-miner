@@ -1,4 +1,4 @@
-import { request, gql, GraphQLClient } from 'graphql-request';
+import { GraphQLClient } from 'graphql-request';
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 
@@ -46,106 +46,496 @@ export class GitLabGraphQLExtractor {
     }
   }
 
-  private async executeQueries(config: AppConfig, queries: string[]): Promise<void> {
-    try {
+  async getMergeRequests(cursor: string | null) {
+    const config = await this.readConfig();
 
-      for (let queryIndex = 0; queryIndex < queries.length; queryIndex++) {
-        const query = queries[queryIndex];
-
-        try {
-          let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
-          let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
-
-          const result = await client.executeQuery(query);
-          const filename = `result_${queryIndex + 1}.json`;
-
-          await fs.writeFile(filename, JSON.stringify(result, null, 2));
-          console.log(`Query ${queryIndex + 1} result saved to ${filename}`);
-        } catch (error) {
-          console.error(`Error executing query ${queryIndex + 1}:`, error);
+    const query = `
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        mergeRequests(first: 100, after: ${cursor}) {
+          edges {
+            node {
+              iid
+            }
+            cursor
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
         }
       }
-    } catch (error) {
-      console.error('Error executing queries:', error);
     }
+    `;
+
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+
+    let result = await client.executeQuery(query);
+
+    let mergeRequests = result.project.mergeRequests;
+    let hasNextPage = result.project.mergeRequests.pageInfo.hasNextPage;
+    let endCursor = result.project.mergeRequests.pageInfo.endCursor;
+
+    for (let mergeRequest of mergeRequests.edges) {
+      let mergeRequestInfo = await this.fetchMergeRequestInfo(mergeRequest.node.iid);
+      mergeRequest.node.info = mergeRequestInfo;
+    }
+
+    return {mergeRequests, hasNextPage, endCursor};
   }
 
-  async run(): Promise<void> {
-    try {
-      const config = await this.readConfig();
-      const queries: string[] = [];
+  async fetchMergeRequestInfo(mergeRequestIid: number) {
+    const config = await this.readConfig();
 
-      const Query_GI = `
+    const query = `
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        mergeRequest(iid: "${mergeRequestIid}") {
+          approvalsRequired
+          approved
+          approvedBy {
+            nodes {
+              id
+            }
+          }
+          assignees {
+            count
+            nodes {
+              bot
+              commitEmail
+              createdAt
+              emails {
+                nodes {
+                  email
+                }
+              }
+              jobTitle
+              lastActivityOn
+              name
+              organization
+              publicEmail
+              state
+              username
+            }
+          }
+          author {
+            id
+          }
+          commenters {
+            nodes {
+              id
+            }
+          }
+          commitCount
+          committers {
+            nodes {
+              id
+            }
+          }
+          conflicts
+          createdAt
+          description
+          diffStatsSummary {
+            changes
+            fileCount
+            additions
+            deletions
+          }
+          downvotes
+          draft
+          humanTimeEstimate
+          humanTotalTimeSpent
+          id
+          iid
+          labels {
+            count
+            nodes {
+              createdAt
+              description
+              id
+              lockOnMerge
+              title
+              updatedAt
+            }
+          }
+          mergeError
+          mergeOngoing
+          mergeStatusEnum
+          mergeUser {
+            id
+          }
+          mergeable
+          mergeableDiscussionsState
+          mergedAt
+          participants {
+            count
+            nodes {
+              id
+            }
+          }
+          preparedAt
+          reviewers {
+            count
+            nodes {
+              id
+            }
+          }
+          state
+          taskCompletionStatus {
+            completedCount
+            count
+          }
+          timeEstimate
+          timelogs {
+            nodes {
+              timeSpent
+            }
+          }
+          title
+          totalTimeSpent
+          updatedAt
+          upvotes
+          userDiscussionsCount
+          userNotesCount
+        }
+      }
+    }
+    `;
+
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+
+    let mergeRequestInfoResult = await client.executeQuery(query);
+    let mergeRequestInfo = mergeRequestInfoResult.project.mergeRequest;
+
+    let commitsResult = await this.fetchCommitsAndDiscussions(mergeRequestIid);
+    mergeRequestInfo.commits = commitsResult.project.mergeRequest.commits;
+    mergeRequestInfo.discussions = commitsResult.project.mergeRequest.discussions;
+
+    return mergeRequestInfo;
+  }
+
+  async fetchCommitsAndDiscussions(mergeRequestIid: number) {
+    const config = await this.readConfig();
+
+    const query = `
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        mergeRequest(iid: "${mergeRequestIid}") {
+          commits {
+            nodes {
+                author {
+                  id
+                }
+                authoredDate
+                committedDate
+                description
+                fullTitle
+                id
+                message
+                title
+            }
+          }
+          discussions {
+            nodes {
+              createdAt
+              id
+              notes {
+                count
+                nodes {
+                  author {
+                    id
+                  }
+                  authorIsContributor
+                  body
+                  createdAt
+                  id
+                  internal
+                  lastEditedAt
+                  lastEditedBy {
+                    id
+                  }
+                  resolvable
+                  resolved
+                  resolvedAt
+                  resolvedBy {
+                    id
+                  }
+                  system
+                  updatedAt
+                }
+              }
+              replyId
+              resolvable
+              resolved
+              resolvedAt
+              resolvedBy {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+    `;
+
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+
+    let commitsAndDiscussionsResult = await client.executeQuery(query);
+
+    return commitsAndDiscussionsResult;
+  }
+
+  async getIssues(cursor: string | null) {
+    const config = await this.readConfig();
+
+    const query = `
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        issues(first: 100, after: ${cursor}) {
+          edges {
+            node {
+              assignees {
+                nodes {
+                  id
+                }
+              }
+              author {
+                id
+              }
+              blocked
+              blockedByCount
+              blockingCount
+              closedAsDuplicateOf {
+                iid
+              }
+              closedAt
+              commenters {
+                nodes {
+                  id
+                }
+              }
+              createdAt
+              description
+              discussions {
+                nodes {
+                  createdAt
+                  id
+                  notes {
+                    count
+                    nodes {
+                      author {
+                        id
+                      }
+                      authorIsContributor
+                      body
+                      createdAt
+                      id
+                      internal
+                      lastEditedAt
+                      resolvable
+                      resolved
+                      resolvedAt
+                      resolvedBy {
+                        id
+                      }
+                      system
+                      updatedAt
+                    }
+                  }
+                  replyId
+                  resolvable
+                  resolved
+                  resolvedAt
+                  resolvedBy {
+                    id
+                  }
+                }
+              }
+              downvotes
+              dueDate
+              hasEpic
+              healthStatus
+              humanTimeEstimate
+              humanTotalTimeSpent
+              id
+              iid
+              iteration {
+                iid
+              }
+              labels {
+                count
+                nodes {
+                  createdAt
+                  description
+                  id
+                  lockOnMerge
+                  title
+                  updatedAt
+                }
+              }
+              mergeRequestsCount
+              moved
+              movedTo {
+                iid
+              }
+              participants {
+                count
+                nodes {
+                  id
+                }
+              }
+              severity
+              state
+              taskCompletionStatus {
+                completedCount
+                count
+              }
+              timeEstimate
+              timelogs {
+                nodes {
+                  timeSpent
+                }
+              }
+              title
+              totalTimeSpent
+              updatedAt
+              upvotes
+              userNotesCount
+            }
+            cursor
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+    }
+    `;
+
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+
+    let result = await client.executeQuery(query);
+
+    let issues = result.project.issues;
+    let hasNextPage = result.project.issues.pageInfo.hasNextPage;
+    let endCursor = result.project.issues.pageInfo.endCursor;
+
+    for (let edge of issues.edges) {
+      let issue = edge.node;
+      let relatedMergeRequests = await this.fetchRelatedMergeRequests(issue.iid);
+      issue.relatedMergeRequests = relatedMergeRequests;
+    }
+
+    return {issues, hasNextPage, endCursor};
+  }
+
+  async fetchRelatedMergeRequests(issueIid: number) {
+    const config = await this.readConfig();
+
+    const query = `
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        issue(iid: "${issueIid}") {
+          relatedMergeRequests {
+            count
+            nodes {
+              iid
+            }
+          }
+        }
+      }
+    }
+    `;
+
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+
+    let result = await client.executeQuery(query);
+    let relatedMergeRequests = result.project.issue.relatedMergeRequests.nodes;
+
+    return relatedMergeRequests;
+  }
+
+  async getProjectInfo() {
+    const config = await this.readConfig();
+
+    const query = `
         {
           project(fullPath: "${config.projectFullPath}") {
-            id
-            name
-            path
-            fullPath
-            webUrl
-            createdAt
-            lastActivityAt
             archived
-            group {
-              fullName
-              fullPath
-              id
-              projectsCount
-              description
-            }
-            namespace {
-              fullName
-              fullPath
-              id
-              totalRepositorySize
-              description
-            }
             codeCoverageSummary {
               averageCoverage
               coverageCount
               lastUpdatedOn
             }
+            createdAt
+            description
+            fullPath
+            group {
+              description
+              epicBoards {
+                nodes {
+                  id
+                  name
+                }
+              }
+              fullName
+              fullPath
+              projectsCount
+              groupMembersCount
+              id
+              name
+              projectsCount
+              stats { 
+                releaseStats {
+                  releasesCount
+                  releasesPercentage
+                }
+              }
+              visibility
+            }
+            id
             languages {
               name
               share
             }
-            description
-            topics
+            lastActivityAt
+            name
+            namespace {
+              description
+              fullName
+              fullPath
+              id
+              name
+              visibility
+            }
             openIssuesCount
             openMergeRequestsCount
+            statistics { 
+              commitCount
+            }
+            repository {
+              diskPath
+              empty
+              exists
+              rootRef
+            }
+            topics
+            visibility
           }
         }
       `;
-  
-      const Query_2 = `
-      {
-        project(fullPath: "${config.projectFullPath}") {
-          name
-          issues {
-            nodes {
-              title
-            }
-          }
-          mergeRequests {
-            nodes {
-              title
-              author {
-                name
-              }
-              approved
-            }
-          }
-        }
-      }
-    `;
-  
-      queries.push(Query_GI);
-      queries.push(Query_2);
 
-      await this.executeQueries(config, queries);
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
 
-    } catch (error) {
-      console.error('Error running Application:', error);
-    }
+    let projectInfo = await client.executeQuery(query);
+
+    return projectInfo;
   }
 }
