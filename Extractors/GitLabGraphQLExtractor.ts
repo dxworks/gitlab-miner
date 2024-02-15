@@ -58,6 +58,11 @@ export class GitLabGraphQLExtractor {
               iid
               title
               state
+              assignees {
+                nodes {
+                  username
+                }
+              }
             }
             cursor
           }

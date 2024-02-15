@@ -1,7 +1,6 @@
 import { GitLabGraphQLExtractor } from "../Extractors/GitLabGraphQLExtractor";
 import * as fs from 'fs/promises';
 import { Issue } from "../Types/Issue";
-import { User } from "../Types/User";
 import { ProjectInfo } from "../Types/ProjectInfo";
 import { Note } from "../Types/Note";
 import { Discussion } from "../Types/Discussion";
@@ -10,17 +9,22 @@ import { MergeRequest } from "../Types/MergeRequest";
 
 export class MergeRequestsProcessor { 
     private extractor: GitLabGraphQLExtractor;
-    // private allData: any = {
-    //     mergeRequests: [],
-    //     projectMembers: [],
-    // };
+    private allData: any = {
+        mergeRequests: [],
+        projectMembers: [],
+    };
 
     constructor(extractor: GitLabGraphQLExtractor) {
         this.extractor = extractor;
     }
 
+    async writeDataToJsonFile() {
+        const filename = `wwwwwww.json`;
+        await fs.writeFile(filename, JSON.stringify(this.allData, null, 2) + '\n');
+    }
+
     async processMergeRequests(endCursor: string | null) { 
-        let allMergeRequests: any[] = [];
+        //let allMergeRequests: any[] = [];
         let hasNextPage = true;
         let cnt = 0;
 
@@ -28,27 +32,28 @@ export class MergeRequestsProcessor {
             let newMergeRequests = await this.extractor.getMergeRequests(endCursor);
             // allMergeRequests = allMergeRequests.concat(newMergeRequests.mergeRequests);
 
-            let mappedMergeRequests: MergeRequest[] = [];
-
             for (let mergeRequest of newMergeRequests.mergeRequests) {
-                mappedMergeRequests.push(this.mapMergeRequest(mergeRequest.node));
+                this.allData.mergeRequests.push(this.mapMergeRequest(mergeRequest.node));
             }
 
-            allMergeRequests = allMergeRequests.concat(mappedMergeRequests);
+            // this.allData.mergeRequests.push(mappedMergeRequests);
 
+            // allMergeRequests = allMergeRequests.concat(mappedMergeRequests);
             // const filename = `MergeRequestsSimplified_toCheck.json`;
             // await fs.appendFile(filename, JSON.stringify(mappedMergeRequests, null, 2)+ '\n');
-
             // console.log(`Query MergeRequests result saved to ${filename}`);
+
             cnt++;
 
             endCursor = JSON.stringify(newMergeRequests.endCursor);
             hasNextPage = newMergeRequests.hasNextPage;
         }
 
+        await this.writeDataToJsonFile();
+
         //this.allData.mergeRequests.push(allMergeRequests);
-        const filename = `MR_toCheck_.json`;
-        await fs.appendFile(filename, JSON.stringify(allMergeRequests, null, 2)+ '\n');
+        const filename = `wwwwwww.json`;
+        // await fs.appendFile(filename, JSON.stringify(this.allData, null, 2)+ '\n');
 
         console.log(`Query MergeRequests result saved to ${filename}`);
         console.log(cnt);
@@ -58,7 +63,18 @@ export class MergeRequestsProcessor {
         return {
             iid: mergeRequest.iid,
             title: mergeRequest.title,
-            state: mergeRequest.state
+            state: mergeRequest.state,
+            assignees: mergeRequest.assignees.nodes.map((assignee: any) => {
+                return this.mapMember(assignee);
+            })
+        };
+    }
+
+    private mapMember(member: any): Member {
+        return {
+            name: member.name || undefined,
+            username: member.username || undefined,
+            publicEmail: member.publicEmail || undefined,
         };
     }
 
@@ -245,13 +261,13 @@ export class MergeRequestsProcessor {
         let mappedMembers: Member[] = [];
 
         for (let member of projectMembers) {
-            mappedMembers.push(this.mapProjectMember(member));
+            this.allData.projectMembers.push(this.mapProjectMember(member));
         }
 
         // this.allData.mergeRequests.push(mappedMembers);
-        const filename = `PM_toCheck.json`;
-        await fs.appendFile(filename, JSON.stringify(mappedMembers, null, 2)+ '\n');
-
+        const filename = `wwwwwww.json`;
+        // await fs.appendFile(filename, JSON.stringify(this.allData.projectMembers, null, 2)+ '\n');
+        await this.writeDataToJsonFile();
         console.log(`Query Users result saved to ${filename}`);
     }
 
