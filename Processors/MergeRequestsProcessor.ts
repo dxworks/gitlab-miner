@@ -19,7 +19,7 @@ export class MergeRequestsProcessor {
     }
 
     async writeDataToJsonFile() {
-        const filename = `wwwwwww.json`;
+        const filename = `ForMetrics.json`;
         await fs.writeFile(filename, JSON.stringify(this.allData, null, 2) + '\n');
     }
 
@@ -64,6 +64,8 @@ export class MergeRequestsProcessor {
             iid: mergeRequest.iid,
             title: mergeRequest.title,
             state: mergeRequest.state,
+            createdAt: mergeRequest.createdAt,
+            mergedAt: mergeRequest.mergedAt,
             assignees: mergeRequest.assignees.nodes.map((assignee: any) => {
                 return this.mapMember(assignee);
             })

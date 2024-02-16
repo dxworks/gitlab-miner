@@ -63,6 +63,8 @@ export class GitLabGraphQLExtractor {
                   username
                 }
               }
+              createdAt
+              mergedAt
             }
             cursor
           }

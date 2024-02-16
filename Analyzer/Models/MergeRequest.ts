@@ -4,6 +4,8 @@ export class MergeRequest {
     iid?: string;
     title?: string;
     state?: string;
+    createdAt?: string;
+    mergedAt?: string;
     assignees?: Member[];
 
     // setIiid (iid: string): void {
