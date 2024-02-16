@@ -56,6 +56,15 @@ export class GitLabGraphQLExtractor {
           edges {
             node {
               iid
+              title
+              state
+              assignees {
+                nodes {
+                  username
+                }
+              }
+              createdAt
+              mergedAt
             }
             cursor
           }
@@ -73,14 +82,14 @@ export class GitLabGraphQLExtractor {
 
     let result = await client.executeQuery(query);
 
-    let mergeRequests = result.project.mergeRequests;
+    let mergeRequests = result.project.mergeRequests.edges;
     let hasNextPage = result.project.mergeRequests.pageInfo.hasNextPage;
     let endCursor = result.project.mergeRequests.pageInfo.endCursor;
 
-    for (let mergeRequest of mergeRequests.edges) {
-      let mergeRequestInfo = await this.fetchMergeRequestInfo(mergeRequest.node.iid);
-      mergeRequest.node.info = mergeRequestInfo;
-    }
+    // for (let mergeRequest of mergeRequests.edges) {
+    //   let mergeRequestInfo = await this.fetchMergeRequestInfo(mergeRequest.node.iid);
+    //   mergeRequest.node.info = mergeRequestInfo;
+    // }
 
     return {mergeRequests, hasNextPage, endCursor};
   }
@@ -537,5 +546,33 @@ export class GitLabGraphQLExtractor {
     let projectInfo = await client.executeQuery(query);
 
     return projectInfo;
+  }
+
+  async getProjectMembers() {
+    const config = await this.readConfig();
+
+    const query = `
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        projectMembers {
+          nodes {
+            user {
+              name
+              username
+              publicEmail
+            }
+          }
+        }
+      }
+    }
+    `;
+
+    let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+    let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+
+    let result = await client.executeQuery(query);
+    let projectMemebers = result.project.projectMembers.nodes;
+
+    return projectMemebers;
   }
 }
