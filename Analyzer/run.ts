@@ -2,6 +2,9 @@ import * as fs from 'fs/promises';
 import { MergeRequest } from './Models/MergeRequest';
 import { Member } from './Models/Member';
 import { Export } from './Models/Export';
+import {Issue} from "./Models/Issue";
+import {Label} from "./Models/Label";
+import {Discussion} from "./Models/Discussion";
 
 export class MainClass {
 
@@ -11,6 +14,7 @@ export class MainClass {
 
         let mergeRequestsMap = new Map<String, MergeRequest>();
         let membersMap = new Map<String, Member>();
+        let issuesMap = new Map<String, Issue>();
 
         for (let mergeRequestData of jsonData.mergeRequests) {
             let mergeRequest: MergeRequest = {
@@ -28,10 +32,63 @@ export class MainClass {
             let member: Member = {
                 name: memberData.name,
                 username: memberData.username,
+                createdAt: memberData.createdAt,
                 publicEmail: memberData.publicEmail,
+                commitEmail: memberData.commitEmail,
+                bot: memberData.bot,
+                groupCount: memberData.groupCount,
+                jobTitle: memberData.jobTitle,
+                lastActivityOn: memberData.lastActivityOn,
+                organization: memberData.organization,
+                state: memberData.state,
                 mergeRequests: [],
+                issues: [],
             };
             membersMap.set(memberData.username, member);
+        }
+
+        for (let issueData of jsonData.issues) {
+            let issue: Issue = {
+                iid: issueData.iid,
+                assignees: [],
+                author: issueData.author,
+                blocked: issueData.blocked,
+                blockedByCount: issueData.blockedByCount,
+                blockingCount: issueData.blockingCount,
+                closedAsDuplicateOf: issueData.closedAsDuplicateOf,
+                closedAt: issueData.closedAt,
+                commenters: [],
+                createdAt: issueData.createdAt,
+                description: issueData.description,
+                downvotes: issueData.downvotes,
+                dueDate: issueData.dueDate,
+                hasEpic: issueData.hasEpic,
+                healthStatus: issueData.healthStatus,
+                humanTimeEstimate: issueData.humanTimeEstimate,
+                humanTotalTimeSpent: issueData.humanTotalTimeSpent,
+                iteration: issueData.iteration,
+                labels: issueData.labels,
+                mergeRequestsCount: issueData.mergeRequestsCount,
+                moved: issueData.moved,
+                movedTo:issueData.movedTo,
+                participants: [],
+                severity: issueData.severity,
+                state: issueData.state,
+                taskCompletionStatus: {
+                    completedCount: issueData.taskCompletionStatus.completedCount,
+                    count: issueData.taskCompletionStatus.count,
+                },
+                timeEstimate: issueData.timeEstimate,
+                title: issueData.title,
+                totalTimeSpent: issueData.totalTimeSpent,
+                updatedAt: issueData.updatedAt,
+                upvotes: issueData.upvotes,
+                userNotesCount: issueData.userNotesCount,
+                weight: issueData.weight,
+                relatedMergeRequests: [],
+                discussions: issueData.discussions,
+            };
+            issuesMap.set(issueData.iid, issue);
         }
 
         for (let mergeRequestData of jsonData.mergeRequests) {
@@ -44,6 +101,20 @@ export class MainClass {
                 if (member) {
                     mergeRequest.assignees?.push(member);
                     member.mergeRequests?.push(mergeRequest);
+                }
+            }
+        }
+
+        for (let issueData of jsonData.issues) {
+            let issue = issuesMap.get(issueData.iid);
+            if (!issue) {
+                continue;
+            }
+            for (let assignee of issueData.assignees) {
+                let member = membersMap.get(assignee.username);
+                if (member) {
+                    issue.assignees?.push(member);
+                    member.issues?.push(issue);
                 }
             }
         }
@@ -64,8 +135,20 @@ export class MainClass {
         membersMap.forEach((member) => {
             console.log(member.username);
             console.log('Associated Merge Requests:', member.mergeRequests?.length);
+            console.log('Associated Issues:', member.issues?.length);
             // member.mergeRequests?.forEach(mergeRequest => {
             //     console.log(mergeRequest.iid);
+            // });
+            console.log('------------------');
+        });
+
+        // Visualize mergeRequestsMap
+        console.log('Issues Map:');
+        issuesMap.forEach((issue) => {
+            console.log(issue.iid);
+            console.log('Associated Members:', issue.assignees?.length);
+            // mergeRequest.assignees?.forEach(member => {
+            //     console.log(member.username);
             // });
             console.log('------------------');
         });

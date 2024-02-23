@@ -5,10 +5,12 @@ import { MergeRequestsProcessor } from "./Processors/MergeRequestsProcessor";
 const configFile = 'config.yml';
 const extractor = new GitLabGraphQLExtractor(configFile);
 const processor = new MergeRequestsProcessor(extractor);
-// processor.processMergeRequests(null);
-// processor.processIssues(null);
-// processor.processProjectInfo();
-// processor.processProjectMembers();
 
-const run = new MainClass();
-run.readFile(`ForMetrics.json`);
+(async () => {
+    await processor.processProjectMembers();
+    await processor.processMergeRequests(null);
+    await processor.processIssues(null);
+})();
+
+// const run = new MainClass();
+// run.readFile(`FTest_Issues.json`);
