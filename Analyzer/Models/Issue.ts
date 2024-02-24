@@ -26,7 +26,7 @@ export class Issue {
     mergeRequestsCount?: number;
     moved?: boolean;
     movedTo?: string;
-    participants?: string[];
+    participants?: Member[];
     severity?: string;
     state?: string;
     taskCompletionStatus?: {
@@ -42,4 +42,4 @@ export class Issue {
     weight?: number;
     relatedMergeRequests?: MergeRequest[];
     discussions?: Discussion[];
-};
+}

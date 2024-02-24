@@ -22,7 +22,7 @@ export class MergeRequestsProcessor {
     }
 
     async writeDataToJsonFile() {
-        const filename = `AllData.json`;
+        const filename = `New_Data.json`;
         await fs.writeFile(filename, JSON.stringify(this.allData, null, 2) + '\n');
     }
 
@@ -67,12 +67,18 @@ export class MergeRequestsProcessor {
             approvalsRequired: mergeRequest.approvalsRequired,
             approved: mergeRequest.approved,
             approvedBy: mergeRequest.approvedBy ? mergeRequest.approvedBy.nodes.map((node: any) => node.username) : [],
-            assignees: mergeRequest.assignees ? mergeRequest.assignees.nodes.map((node: any) => node.username) : [],
+            assignees: mergeRequest.assignees.nodes.map((node: any) => {
+                return this.mapMember(node);
+            }),
             author: mergeRequest.author ? mergeRequest.author.username : null,
             autoMergeEnabled: mergeRequest.autoMergeEnabled,
-            commenters: mergeRequest.commenters ? mergeRequest.commenters.nodes.map((node: any) => node.username) : [],
+            commenters: mergeRequest.commenters.nodes.map((node: any) => {
+                return this.mapMember(node);
+            }),
             commitCount: mergeRequest.commitCount,
-            committers: mergeRequest.committers ? mergeRequest.committers.nodes.map((node: any) => node.username) : [],
+            committers: mergeRequest.committers.nodes.map((node: any) => {
+                return this.mapMember(node);
+            }),
             conflicts: mergeRequest.conflicts,
             createdAt: mergeRequest.createdAt,
             description: mergeRequest.description,
@@ -95,7 +101,9 @@ export class MergeRequestsProcessor {
             mergeable: mergeRequest.mergeable,
             mergeableDiscussionsState: mergeRequest.mergeableDiscussionsState,
             mergedAt: mergeRequest.mergedAt,
-            participants: mergeRequest.participants ? mergeRequest.participants.nodes.map((node: any) => node.username) : [],
+            participants: mergeRequest.participants.nodes.map((node: any) => {
+                return this.mapMember(node);
+            }),
             preparedAt: mergeRequest.preparedAt,
             reviewers: mergeRequest.reviewers ? mergeRequest.reviewers.nodes.map((node: any) => node.username) : [],
             state: mergeRequest.state,
@@ -109,8 +117,24 @@ export class MergeRequestsProcessor {
             upvotes: mergeRequest.upvotes,
             userDiscussionsCount: mergeRequest.userDiscussionsCount,
             userNotesCount: mergeRequest.userNotesCount,
-            commits: mergeRequest.commits ? mergeRequest.commits.nodes.map((commit: any) => this.mapCommit(commit)) : [],
-            discussions: mergeRequest.discussions ? mergeRequest.discussions.nodes.map((discussion: any) => this.mapDiscussion(discussion)) : []
+            commits: mergeRequest.commits ? mergeRequest.commits.nodes.map((node: any) => this.mapCommit(node)) : [],
+            discussions: mergeRequest.discussions ? mergeRequest.discussions.nodes.map((node: any) => this.mapDiscussion(node)) : []
+        };
+    }
+
+    private mapMember(member: any): Member {
+        return {
+            name: member.name || undefined,
+            username: member.username || undefined,
+            createdAt: member.createdAt || undefined,
+            publicEmail: member.publicEmail || undefined,
+            commitEmail: member.commitEmail || undefined,
+            bot: member.bot || undefined,
+            groupCount: member.groupCount || undefined,
+            jobTitle: member.jobTitle || undefined,
+            lastActivityOn: member.lastActivityOn || undefined,
+            organization: member.organization || undefined,
+            state: member.state || undefined
         };
     }
 
@@ -211,14 +235,18 @@ export class MergeRequestsProcessor {
 
     private mapIssue(issue: any): Issue {
         return {
-            assignees: issue.assignees.nodes.map((assignee: any) => assignee.username),
+            assignees: issue.assignees.nodes.map((node: any) => {
+                return this.mapMember(node);
+            }),
             author: issue.author.id,
             blocked: issue.blocked,
             blockedByCount: issue.blockedByCount,
             blockingCount: issue.blockingCount,
             closedAsDuplicateOf: issue.closedAsDuplicateOf?.iid,
             closedAt: issue.closedAt,
-            commenters: issue.commenters.nodes.map((commenter: any) => commenter.username),
+            commenters: issue.commenters.nodes.map((node: any) => {
+                return this.mapMember(node);
+            }),
             createdAt: issue.createdAt,
             description: issue.description,
             downvotes: issue.downvotes,
@@ -233,7 +261,9 @@ export class MergeRequestsProcessor {
             mergeRequestsCount: issue.mergeRequestsCount,
             moved: issue.moved,
             movedTo: issue.movedTo?.iid,
-            participants: issue.participants.nodes.map((participant: any) => participant.username),
+            participants: issue.participants.nodes.map((node: any) => {
+                return this.mapMember(node);
+            }),
             severity: issue.severity,
             state: issue.state,
             taskCompletionStatus: issue.taskCompletionStatus,
@@ -245,7 +275,7 @@ export class MergeRequestsProcessor {
             userNotesCount: issue.userNotesCount,
             weight: issue.weight,
             relatedMergeRequests: issue.relatedMergeRequests?.map((mergeRequest: { iid: any; }) => mergeRequest.iid),
-            discussions: issue.discussions.nodes ? issue.discussions.nodes.map((discussion: any) => this.mapDiscussion(discussion)) : [],
+            discussions: issue.discussions ? issue.discussions.nodes.map((node: any) => this.mapDiscussion(node)) : []
         };
     }
 

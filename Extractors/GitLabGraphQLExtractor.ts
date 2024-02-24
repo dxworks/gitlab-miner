@@ -371,8 +371,8 @@ export class GitLabGraphQLExtractor {
       let relatedMergeRequests = await this.fetchRelatedMergeRequests(issue.iid);
       issue.relatedMergeRequests = relatedMergeRequests;
 
-      let discussions = await this.fetchDiscussions(issue.iid);
-      issue.discussions = discussions;
+      let discussionsResult = await this.fetchDiscussions(issue.iid);
+      issue.discussions = discussionsResult.project.issue.discussions;
     }
 
     return {issues, hasNextPage, endCursor};
@@ -458,8 +458,7 @@ export class GitLabGraphQLExtractor {
     let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
     let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
 
-    let result = await client.executeQuery(query);
-    let discussionsResult = result.project.issue.discussions.nodes;
+    let discussionsResult = await client.executeQuery(query);
 
     return discussionsResult;
   }

@@ -6,11 +6,11 @@ const configFile = 'config.yml';
 const extractor = new GitLabGraphQLExtractor(configFile);
 const processor = new MergeRequestsProcessor(extractor);
 
-(async () => {
-    await processor.processProjectMembers();
-    await processor.processMergeRequests(null);
-    await processor.processIssues(null);
-})();
+// (async () => {
+//     await processor.processProjectMembers();
+//     await processor.processMergeRequests(null);
+//     await processor.processIssues(null);
+// })();
 
-// const run = new MainClass();
-// run.readFile(`FTest_Issues.json`);
+const run = new MainClass();
+run.readFile(`New_Data.json`);
