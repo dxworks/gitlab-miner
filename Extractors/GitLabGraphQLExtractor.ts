@@ -56,15 +56,6 @@ export class GitLabGraphQLExtractor {
           edges {
             node {
               iid
-              title
-              state
-              assignees {
-                nodes {
-                  username
-                }
-              }
-              createdAt
-              mergedAt
             }
             cursor
           }
@@ -86,10 +77,10 @@ export class GitLabGraphQLExtractor {
     let hasNextPage = result.project.mergeRequests.pageInfo.hasNextPage;
     let endCursor = result.project.mergeRequests.pageInfo.endCursor;
 
-    // for (let mergeRequest of mergeRequests.edges) {
-    //   let mergeRequestInfo = await this.fetchMergeRequestInfo(mergeRequest.node.iid);
-    //   mergeRequest.node.info = mergeRequestInfo;
-    // }
+    for (let mergeRequest of mergeRequests) {
+      let mergeRequestInfo = await this.fetchMergeRequestInfo(mergeRequest.node.iid);
+      mergeRequest.node.info = mergeRequestInfo;
+    }
 
     return {mergeRequests, hasNextPage, endCursor};
   }
@@ -101,45 +92,37 @@ export class GitLabGraphQLExtractor {
     {
       project(fullPath: "${config.projectFullPath}") {
         mergeRequest(iid: "${mergeRequestIid}") {
+          iid
+          approvalsLeft
           approvalsRequired
           approved
           approvedBy {
+            count
             nodes {
-              id
+              username
             }
           }
           assignees {
             count
             nodes {
-              bot
-              commitEmail
-              createdAt
-              emails {
-                nodes {
-                  email
-                }
-              }
-              jobTitle
-              lastActivityOn
-              name
-              organization
-              publicEmail
-              state
               username
             }
           }
           author {
-            id
+            username
           }
+          autoMergeEnabled
           commenters {
+            count
             nodes {
-              id
+              username
             }
           }
           commitCount
           committers {
+            count
             nodes {
-              id
+              username
             }
           }
           conflicts
@@ -151,12 +134,11 @@ export class GitLabGraphQLExtractor {
             additions
             deletions
           }
+          divergedFromTargetBranch
           downvotes
           draft
           humanTimeEstimate
           humanTotalTimeSpent
-          id
-          iid
           labels {
             count
             nodes {
@@ -172,7 +154,7 @@ export class GitLabGraphQLExtractor {
           mergeOngoing
           mergeStatusEnum
           mergeUser {
-            id
+            username
           }
           mergeable
           mergeableDiscussionsState
@@ -180,27 +162,24 @@ export class GitLabGraphQLExtractor {
           participants {
             count
             nodes {
-              id
+              username
             }
           }
           preparedAt
           reviewers {
             count
             nodes {
-              id
+              username
             }
           }
           state
+          sourceBranch
           taskCompletionStatus {
             completedCount
             count
           }
+          targetBranch
           timeEstimate
-          timelogs {
-            nodes {
-              timeSpent
-            }
-          }
           title
           totalTimeSpent
           updatedAt
@@ -218,9 +197,9 @@ export class GitLabGraphQLExtractor {
     let mergeRequestInfoResult = await client.executeQuery(query);
     let mergeRequestInfo = mergeRequestInfoResult.project.mergeRequest;
 
-    let commitsResult = await this.fetchCommitsAndDiscussions(mergeRequestIid);
-    mergeRequestInfo.commits = commitsResult.project.mergeRequest.commits;
-    mergeRequestInfo.discussions = commitsResult.project.mergeRequest.discussions;
+    let commitsAndDiacussionsResult = await this.fetchCommitsAndDiscussions(mergeRequestIid);
+    mergeRequestInfo.commits = commitsAndDiacussionsResult.project.mergeRequest.commits;
+    mergeRequestInfo.discussions = commitsAndDiacussionsResult.project.mergeRequest.discussions;
 
     return mergeRequestInfo;
   }
@@ -235,13 +214,12 @@ export class GitLabGraphQLExtractor {
           commits {
             nodes {
                 author {
-                  id
+                  username
                 }
                 authoredDate
                 committedDate
                 description
                 fullTitle
-                id
                 message
                 title
             }
@@ -254,7 +232,7 @@ export class GitLabGraphQLExtractor {
                 count
                 nodes {
                   author {
-                    id
+                    username
                   }
                   authorIsContributor
                   body
@@ -263,13 +241,13 @@ export class GitLabGraphQLExtractor {
                   internal
                   lastEditedAt
                   lastEditedBy {
-                    id
+                    username
                   }
                   resolvable
                   resolved
                   resolvedAt
                   resolvedBy {
-                    id
+                    username
                   }
                   system
                   updatedAt
@@ -280,7 +258,7 @@ export class GitLabGraphQLExtractor {
               resolved
               resolvedAt
               resolvedBy {
-                id
+                username
               }
             }
           }
@@ -308,68 +286,29 @@ export class GitLabGraphQLExtractor {
             node {
               assignees {
                 nodes {
-                  id
+                  username
                 }
               }
               author {
-                id
+                username
               }
               blocked
               blockedByCount
               blockingCount
-              closedAsDuplicateOf {
-                iid
-              }
               closedAt
               commenters {
                 nodes {
-                  id
+                  username
                 }
               }
               createdAt
               description
-              discussions {
-                nodes {
-                  createdAt
-                  id
-                  notes {
-                    count
-                    nodes {
-                      author {
-                        id
-                      }
-                      authorIsContributor
-                      body
-                      createdAt
-                      id
-                      internal
-                      lastEditedAt
-                      resolvable
-                      resolved
-                      resolvedAt
-                      resolvedBy {
-                        id
-                      }
-                      system
-                      updatedAt
-                    }
-                  }
-                  replyId
-                  resolvable
-                  resolved
-                  resolvedAt
-                  resolvedBy {
-                    id
-                  }
-                }
-              }
               downvotes
               dueDate
               hasEpic
               healthStatus
               humanTimeEstimate
               humanTotalTimeSpent
-              id
               iid
               iteration {
                 iid
@@ -393,26 +332,18 @@ export class GitLabGraphQLExtractor {
               participants {
                 count
                 nodes {
-                  id
+                  username
                 }
               }
               severity
               state
-              taskCompletionStatus {
-                completedCount
-                count
-              }
               timeEstimate
-              timelogs {
-                nodes {
-                  timeSpent
-                }
-              }
               title
               totalTimeSpent
               updatedAt
               upvotes
               userNotesCount
+              weight
             }
             cursor
           }
@@ -436,8 +367,12 @@ export class GitLabGraphQLExtractor {
 
     for (let edge of issues.edges) {
       let issue = edge.node;
+
       let relatedMergeRequests = await this.fetchRelatedMergeRequests(issue.iid);
       issue.relatedMergeRequests = relatedMergeRequests;
+
+      let discussionsResult = await this.fetchDiscussions(issue.iid);
+      issue.discussions = discussionsResult.project.issue.discussions;
     }
 
     return {issues, hasNextPage, endCursor};
@@ -470,83 +405,141 @@ export class GitLabGraphQLExtractor {
     return relatedMergeRequests;
   }
 
-  async getProjectInfo() {
+  async fetchDiscussions(issueIid: number) {
     const config = await this.readConfig();
 
     const query = `
-        {
-          project(fullPath: "${config.projectFullPath}") {
-            archived
-            codeCoverageSummary {
-              averageCoverage
-              coverageCount
-              lastUpdatedOn
-            }
-            createdAt
-            description
-            fullPath
-            group {
-              description
-              epicBoards {
+    {
+      project(fullPath: "${config.projectFullPath}") {
+        issue(iid: "${issueIid}") {
+          discussions {
+            nodes {
+              createdAt
+              id
+              notes {
+                count
                 nodes {
+                  author {
+                    username
+                  }
+                  authorIsContributor
+                  body
+                  createdAt
                   id
-                  name
+                  internal
+                  lastEditedAt
+                  lastEditedBy {
+                    username
+                  }
+                  resolvable
+                  resolved
+                  resolvedAt
+                  resolvedBy {
+                    username
+                  }
+                  system
+                  updatedAt
                 }
               }
-              fullName
-              fullPath
-              projectsCount
-              groupMembersCount
-              id
-              name
-              projectsCount
-              stats { 
-                releaseStats {
-                  releasesCount
-                  releasesPercentage
-                }
+              replyId
+              resolvable
+              resolved
+              resolvedAt
+              resolvedBy {
+                username
               }
-              visibility
             }
-            id
-            languages {
-              name
-              share
-            }
-            lastActivityAt
-            name
-            namespace {
-              description
-              fullName
-              fullPath
-              id
-              name
-              visibility
-            }
-            openIssuesCount
-            openMergeRequestsCount
-            statistics { 
-              commitCount
-            }
-            repository {
-              diskPath
-              empty
-              exists
-              rootRef
-            }
-            topics
-            visibility
           }
         }
-      `;
+      }
+    }
+    `;
 
     let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
     let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
 
-    let projectInfo = await client.executeQuery(query);
+    let discussionsResult = await client.executeQuery(query);
 
-    return projectInfo;
+    return discussionsResult;
   }
+
+  // async getProjectInfo() {
+  //   const config = await this.readConfig();
+  //
+  //   const query = `
+  //       {
+  //         project(fullPath: "${config.projectFullPath}") {
+  //           archived
+  //           codeCoverageSummary {
+  //             averageCoverage
+  //             coverageCount
+  //             lastUpdatedOn
+  //           }
+  //           createdAt
+  //           description
+  //           fullPath
+  //           group {
+  //             description
+  //             epicBoards {
+  //               nodes {
+  //                 id
+  //                 name
+  //               }
+  //             }
+  //             fullName
+  //             fullPath
+  //             projectsCount
+  //             groupMembersCount
+  //             id
+  //             name
+  //             projectsCount
+  //             stats {
+  //               releaseStats {
+  //                 releasesCount
+  //                 releasesPercentage
+  //               }
+  //             }
+  //             visibility
+  //           }
+  //           id
+  //           languages {
+  //             name
+  //             share
+  //           }
+  //           lastActivityAt
+  //           name
+  //           namespace {
+  //             description
+  //             fullName
+  //             fullPath
+  //             id
+  //             name
+  //             visibility
+  //           }
+  //           openIssuesCount
+  //           openMergeRequestsCount
+  //           statistics {
+  //             commitCount
+  //           }
+  //           repository {
+  //             diskPath
+  //             empty
+  //             exists
+  //             rootRef
+  //           }
+  //           topics
+  //           visibility
+  //         }
+  //       }
+  //     `;
+  //
+  //   let randomToken = config.tokens[Math.floor(Math.random() * config.tokens.length)];
+  //   let client = new GitLabGraphQLClient(config.gitlabApiUrl, randomToken);
+  //
+  //   let projectInfo = await client.executeQuery(query);
+  //
+  //   return projectInfo;
+  // }
 
   async getProjectMembers() {
     const config = await this.readConfig();
@@ -559,7 +552,15 @@ export class GitLabGraphQLExtractor {
             user {
               name
               username
+              createdAt
               publicEmail
+              commitEmail
+              bot
+              groupCount
+              jobTitle
+              lastActivityOn
+              organization
+              state
             }
           }
         }

@@ -1,10 +1,20 @@
 import { MergeRequest } from "./MergeRequest";
+import {Issue} from "./Issue";
 
 export class Member {
     name?: string;
     username?: string;
+    createdAt?: string;
     publicEmail?: string;
+    commitEmail?: string;
+    bot?: boolean;
+    groupCount?: number;
+    jobTitle?: string;
+    lastActivityOn?: string;
+    organization?: string;
+    state?: string;
     mergeRequests?: MergeRequest[];
+    issues?: Issue[];
     
     // setName(name: string): void {
     //     this.name = name;

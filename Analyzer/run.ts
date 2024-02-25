@@ -2,6 +2,9 @@ import * as fs from 'fs/promises';
 import { MergeRequest } from './Models/MergeRequest';
 import { Member } from './Models/Member';
 import { Export } from './Models/Export';
+import {Issue} from "./Models/Issue";
+import {Label} from "./Models/Label";
+import {Discussion} from "./Models/Discussion";
 
 export class MainClass {
 
@@ -11,15 +14,62 @@ export class MainClass {
 
         let mergeRequestsMap = new Map<String, MergeRequest>();
         let membersMap = new Map<String, Member>();
+        let issuesMap = new Map<String, Issue>();
 
         for (let mergeRequestData of jsonData.mergeRequests) {
             let mergeRequest: MergeRequest = {
                 iid: mergeRequestData.iid,
-                title: mergeRequestData.title,
-                state: mergeRequestData.state,
-                createdAt: mergeRequestData.createdAt,
-                mergedAt: mergeRequestData.mergedAt,
+                approvalsLeft: mergeRequestData.approvalsLeft,
+                approvalsRequired: mergeRequestData.approvalsRequired,
+                approved: mergeRequestData.approved,
+                approvedBy: mergeRequestData.approvedBy,
                 assignees: [],
+                author: mergeRequestData.author,
+                autoMergeEnabled: mergeRequestData.autoMergeEnabled,
+                commenters: [],
+                commitCount: mergeRequestData.commitCount,
+                committers: [],
+                conflicts: mergeRequestData.conflicts,
+                createdAt: mergeRequestData.createdAt,
+                description: mergeRequestData.description,
+                diffStatsSummary: {
+                    changes: mergeRequestData.changes,
+                    fileCount: mergeRequestData.fileCount,
+                    additions: mergeRequestData.additions,
+                    deletions: mergeRequestData.deletions,
+                },
+                divergedFromTargetBranch: mergeRequestData.divergedFromTargetBranch,
+                downvotes: mergeRequestData.downvotes,
+                draft: mergeRequestData.draft,
+                humanTimeEstimate: mergeRequestData.humanTimeEstimate,
+                humanTotalTimeSpent: mergeRequestData.humanTotalTimeSpent,
+                labels: mergeRequestData.labels,
+                mergeError: mergeRequestData.mergeError,
+                mergeOngoing: mergeRequestData.mergeOngoing,
+                mergeStatusEnum: mergeRequestData.mergeStatusEnum,
+                mergeUser: mergeRequestData.mergeUser,
+                mergeable: mergeRequestData.mergeable,
+                mergeableDiscussionsState: mergeRequestData.mergeableDiscussionsState,
+                mergedAt: mergeRequestData.mergedAt,
+                participants: [],
+                preparedAt: mergeRequestData.preparedAt,
+                reviewers: [],
+                sourceBranch: mergeRequestData.sourceBranch,
+                state: mergeRequestData.state,
+                taskCompletionStatus: {
+                    completedCount: mergeRequestData.completedCount,
+                    count: mergeRequestData.count,
+                },
+                targetBranch: mergeRequestData.targetBranch,
+                timeEstimate: mergeRequestData.timeEstimate,
+                title: mergeRequestData.title,
+                totalTimeSpent: mergeRequestData.totalTimeSpent,
+                updatedAt: mergeRequestData.updatedAt,
+                upvotes: mergeRequestData.upvotes,
+                userDiscussionsCount: mergeRequestData.userDiscussionsCount,
+                userNotesCount: mergeRequestData.userNotesCount,
+                commits: mergeRequestData.commits,
+                discussions: mergeRequestData.discussions,
             };
             mergeRequestsMap.set(mergeRequestData.iid, mergeRequest);
         }
@@ -28,22 +78,134 @@ export class MainClass {
             let member: Member = {
                 name: memberData.name,
                 username: memberData.username,
+                createdAt: memberData.createdAt,
                 publicEmail: memberData.publicEmail,
+                commitEmail: memberData.commitEmail,
+                bot: memberData.bot,
+                groupCount: memberData.groupCount,
+                jobTitle: memberData.jobTitle,
+                lastActivityOn: memberData.lastActivityOn,
+                organization: memberData.organization,
+                state: memberData.state,
                 mergeRequests: [],
+                issues: [],
             };
             membersMap.set(memberData.username, member);
         }
 
+        for (let issueData of jsonData.issues) {
+            let issue: Issue = {
+                iid: issueData.iid,
+                assignees: [],
+                author: issueData.author,
+                blocked: issueData.blocked,
+                blockedByCount: issueData.blockedByCount,
+                blockingCount: issueData.blockingCount,
+                closedAsDuplicateOf: issueData.closedAsDuplicateOf,
+                closedAt: issueData.closedAt,
+                commenters: [],
+                createdAt: issueData.createdAt,
+                description: issueData.description,
+                downvotes: issueData.downvotes,
+                dueDate: issueData.dueDate,
+                hasEpic: issueData.hasEpic,
+                healthStatus: issueData.healthStatus,
+                humanTimeEstimate: issueData.humanTimeEstimate,
+                humanTotalTimeSpent: issueData.humanTotalTimeSpent,
+                iteration: issueData.iteration,
+                labels: issueData.labels,
+                mergeRequestsCount: issueData.mergeRequestsCount,
+                moved: issueData.moved,
+                movedTo:issueData.movedTo,
+                participants: [],
+                severity: issueData.severity,
+                state: issueData.state,
+                taskCompletionStatus: {
+                    completedCount: issueData.completedCount,
+                    count: issueData.count,
+                },
+                timeEstimate: issueData.timeEstimate,
+                title: issueData.title,
+                totalTimeSpent: issueData.totalTimeSpent,
+                updatedAt: issueData.updatedAt,
+                upvotes: issueData.upvotes,
+                userNotesCount: issueData.userNotesCount,
+                weight: issueData.weight,
+                relatedMergeRequests: [],
+                discussions: issueData.discussions,
+            };
+            issuesMap.set(issueData.iid, issue);
+        }
+
+        //MERGE REQUESTS
         for (let mergeRequestData of jsonData.mergeRequests) {
             let mergeRequest = mergeRequestsMap.get(mergeRequestData.iid);
             if (!mergeRequest) {
                 continue;
             }
+
             for (let assignee of mergeRequestData.assignees) {
                 let member = membersMap.get(assignee.username);
                 if (member) {
                     mergeRequest.assignees?.push(member);
                     member.mergeRequests?.push(mergeRequest);
+                }
+            }
+
+            for (let commenter of mergeRequestData.commenters) {
+                let member = membersMap.get(commenter.username);
+                if (member) {
+                    mergeRequest.commenters?.push(member);
+                }
+            }
+
+            for (let committer of mergeRequestData.committers) {
+                let member = membersMap.get(committer.username);
+                if (member) {
+                    mergeRequest.committers?.push(member);
+                }
+            }
+            for (let participant of mergeRequestData.participants) {
+                let member = membersMap.get(participant.username);
+                if (member) {
+                    mergeRequest.participants?.push(member);
+                }
+            }
+
+            for (let reviewer of mergeRequestData.reviewers) {
+                let member = membersMap.get(reviewer.username);
+                if (member) {
+                    mergeRequest.reviewers?.push(member);
+                }
+            }
+        }
+
+        //ISSUES
+        for (let issueData of jsonData.issues) {
+            let issue = issuesMap.get(issueData.iid);
+            if (!issue) {
+                continue;
+            }
+
+            for (let assignee of issueData.assignees) {
+                let member = membersMap.get(assignee.username);
+                if (member) {
+                    issue.assignees?.push(member);
+                    member.issues?.push(issue);
+                }
+            }
+
+            for (let commenter of issueData.commenters) {
+                let member = membersMap.get(commenter.username);
+                if (member) {
+                    issue.commenters?.push(member);
+                }
+            }
+
+            for (let participant of issueData.participants) {
+                let member = membersMap.get(participant.username);
+                if (member) {
+                    issue.participants?.push(member);
                 }
             }
         }
@@ -52,7 +214,11 @@ export class MainClass {
         console.log('Merge Requests Map:');
         mergeRequestsMap.forEach((mergeRequest) => {
             console.log(mergeRequest.iid);
-            console.log('Associated Members:', mergeRequest.assignees?.length);
+            console.log('Associated Assignees:', mergeRequest.assignees?.length);
+            console.log('Associated Commenters:', mergeRequest.commenters?.length);
+            console.log('Associated Committers:', mergeRequest.committers?.length);
+            console.log('Associated Participants:', mergeRequest.participants?.length);
+            console.log('Associated Reviewers:', mergeRequest.reviewers?.length);
             // mergeRequest.assignees?.forEach(member => {
             //     console.log(member.username);
             // });
@@ -64,8 +230,22 @@ export class MainClass {
         membersMap.forEach((member) => {
             console.log(member.username);
             console.log('Associated Merge Requests:', member.mergeRequests?.length);
+            console.log('Associated Issues:', member.issues?.length);
             // member.mergeRequests?.forEach(mergeRequest => {
             //     console.log(mergeRequest.iid);
+            // });
+            console.log('------------------');
+        });
+
+        // Visualize IssuesMap
+        console.log('Issues Map:');
+        issuesMap.forEach((issue) => {
+            console.log(issue.iid);
+            console.log('Associated Assignees:', issue.assignees?.length);
+            console.log('Associated Commenters:', issue.commenters?.length);
+            console.log('Associated Participants:', issue.participants?.length);
+            // mergeRequest.assignees?.forEach(member => {
+            //     console.log(member.username);
             // });
             console.log('------------------');
         });
@@ -75,9 +255,6 @@ export class MainClass {
         let closedCount = 0;
         let mergedCount = 0;
         let totalLifetime = 0;
-        let o = 0;
-        let c = 0;
-        let m = 0;
 
         for (let [_, mergeRequest] of mergeRequestsMap) {
             switch (mergeRequest.state) {
@@ -111,6 +288,8 @@ export class MainClass {
         exportData.setAvgNoUntilMergingAMergeRequest(avgTime);
 
         console.log(exportData);
+        console.log(membersMap.size);
+        console.log(mergeRequestsMap.size);
+        console.log(issuesMap.size);
     }
-
 }
