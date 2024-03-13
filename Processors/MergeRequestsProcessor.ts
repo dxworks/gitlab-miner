@@ -3,7 +3,6 @@ import * as fs from 'fs/promises';
 import { Member } from "../Types/Member";
 import { MergeRequest } from "../Types/MergeRequest";
 import {Commit} from "../Types/Commit";
-import {Diff} from "../Types/Diff";
 import {Discussion} from "../Types/Discussion";
 import {Note} from "../Types/Note";
 import {Label} from "../Types/Label";
@@ -22,7 +21,7 @@ export class MergeRequestsProcessor {
     }
 
     async writeDataToJsonFile() {
-        const filename = `New_Data.json`;
+        const filename = `Graphviz.json`;
         await fs.writeFile(filename, JSON.stringify(this.allData, null, 2) + '\n');
     }
 
@@ -160,15 +159,6 @@ export class MergeRequestsProcessor {
             title: commit.title
         };
     }
-
-    private mapDiff(diff: any): Diff {
-        return {
-            deletedFile: diff.deletedFile,
-            newFile: diff.newFile,
-            renamedFile: diff.renamedFile
-        };
-    }
-
 
     private mapDiscussion(discussion: any): Discussion {
         return {
