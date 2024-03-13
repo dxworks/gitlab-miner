@@ -13,4 +13,4 @@ const processor = new MergeRequestsProcessor(extractor);
 // })();
 
 const run = new MainClass();
-run.readFile(`New_Data.json`);
+run.readFile(`All_New_Data.json`);

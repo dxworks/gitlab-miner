@@ -3,10 +3,15 @@ import { MergeRequest } from './Models/MergeRequest';
 import { Member } from './Models/Member';
 import { Export } from './Models/Export';
 import {Issue} from "./Models/Issue";
-import {Label} from "./Models/Label";
-import {Discussion} from "./Models/Discussion";
 
 export class MainClass {
+
+    public differenceInDays(date1: Date, date2: Date): number {
+        const millisecondsPerDay = 1000 * 60 * 60 * 24;
+        const timeDifference = Math.abs(date2.getTime() - date1.getTime());
+        //return Math.floor(timeDifference / millisecondsPerDay);
+        return timeDifference / millisecondsPerDay;
+    }
 
     async readFile(filename: string) {
         const data = await fs.readFile(filename, 'utf8');
@@ -250,11 +255,28 @@ export class MainClass {
             console.log('------------------');
         });
 
-        const exportData = new Export();
-        let openCount = 0;
-        let closedCount = 0;
-        let mergedCount = 0;
-        let totalLifetime = 0;
+        const exportData: Export = new Export();
+        let openCount: number = 0;
+        let closedCount: number = 0;
+        let mergedCount: number = 0;
+        let totalLifetimeH: number = 0;
+        let totalLifetimeD: number = 0;
+        let commitCountSum: number = 0;
+        let commentsSum: number = 0;
+        let firstMergeRequestCreationData: Date | undefined;
+        let lastMergeRequestCreationData: Date | undefined;
+        let daysDifference: number = 0;
+        let weeksDifference: number = 0;
+        let createdAtTimestamp: number | undefined;
+        let firstDiscussionTimestamp: number | undefined;
+        let totalFirstInteractionLifetimeH: number = 0;
+        let totalFirstInteractionLifetimeD: number = 0;
+        let interactionCount: number = 0;
+        let createdAtRaw: Date | undefined;
+        let firstDiscussionRaw: Date | undefined;
+        let noOfMergeRequestsWithDiscussions: number = 0;
+        let unresolvedDiscussionsReport: number = 0;
+        let withConflictsCount: number = 0;
 
         for (let [_, mergeRequest] of mergeRequestsMap) {
             switch (mergeRequest.state) {
@@ -267,16 +289,72 @@ export class MainClass {
                 case 'merged':
                     mergedCount++;
 
-                    if (mergeRequest.createdAt !== undefined && mergeRequest.mergedAt !== undefined) {
+                    //Average time until merging a merge request
+                    if (mergeRequest.createdAt !== undefined && mergeRequest.mergedAt !== undefined && mergeRequest.mergedAt !== null && mergeRequest.createdAt !== null) {
                         let createdAtTimestamp = new Date(mergeRequest.createdAt).getTime();
                         let mergedAtTimestamp = new Date(mergeRequest.mergedAt).getTime();
-                        let lifetime = mergedAtTimestamp - createdAtTimestamp;
-                        totalLifetime += lifetime;
+
+                        let lifetimeH = mergedAtTimestamp - createdAtTimestamp;
+                        let lifetimeD = this.differenceInDays(new Date(mergeRequest.createdAt), new Date(mergeRequest.mergedAt));
+                        totalLifetimeH += lifetimeH;
+                        totalLifetimeD += lifetimeD;
+
+                        //First and last merge request creation date to calculate the average number of merge requests per day and per week
+                        if(firstMergeRequestCreationData === undefined) {
+                            firstMergeRequestCreationData = new Date(mergeRequest.createdAt);
+                        }
+                        lastMergeRequestCreationData = new Date(mergeRequest.createdAt);
                     }
 
                     break;
                 default:
                     break;
+            }
+
+            commitCountSum += mergeRequest.commitCount? mergeRequest.commitCount : 0;
+            commentsSum += mergeRequest.userNotesCount? mergeRequest.userNotesCount : 0;
+
+            let createdAt = mergeRequest.createdAt;
+            if (createdAt !== undefined) {
+                createdAtRaw = new Date(createdAt);
+                createdAtTimestamp = new Date(createdAt).getTime();
+            }
+
+            let firstDiscussionCreatedAt = mergeRequest.discussions?.at(0)?.createdAt;
+            if (firstDiscussionCreatedAt !== undefined) {
+                firstDiscussionRaw = new Date(firstDiscussionCreatedAt);
+                firstDiscussionTimestamp = new Date(firstDiscussionCreatedAt).getTime();
+
+                interactionCount++;
+            }
+
+            //Average time until first interaction
+            if(firstDiscussionRaw !== undefined && createdAtRaw !== undefined) {
+                let lifetime = this.differenceInDays(createdAtRaw, firstDiscussionRaw);
+                totalFirstInteractionLifetimeD += lifetime;
+            }
+            if(firstDiscussionTimestamp !== undefined && createdAtTimestamp !== undefined) {
+                let lifetime = firstDiscussionTimestamp - createdAtTimestamp;
+                totalFirstInteractionLifetimeH += lifetime;
+            }
+
+            //Average number of unresolved discussions
+            if(mergeRequest.discussions !== undefined) {
+                let unresolvedDiscussions = 0;
+                for (let discussion of mergeRequest.discussions) {
+                    if (discussion.resolved === false) {
+                        unresolvedDiscussions++;
+                    }
+                }
+                if (unresolvedDiscussions > 0) {
+                    unresolvedDiscussionsReport += unresolvedDiscussions / mergeRequest.discussions.length;
+                }
+                noOfMergeRequestsWithDiscussions++;
+            }
+
+            //Average number of conflicts per merge request
+            if (mergeRequest.conflicts === true) {
+                withConflictsCount++;
             }
         }
 
@@ -284,12 +362,37 @@ export class MainClass {
         exportData.setClosed(closedCount);
         exportData.setMerged(mergedCount);
 
-        const avgTime: number = (totalLifetime/mergedCount)/(3600 * 1000);
-        exportData.setAvgNoUntilMergingAMergeRequest(avgTime);
+        const avgLifeHours: number = (totalLifetimeH/mergedCount)/(3600 * 1000);
+        exportData.setAvgTimeUntilMergingAMergeRequestH(avgLifeHours);
+
+        const avgLifeDays: number = (totalLifetimeD/mergedCount);
+        exportData.setAvgTimeUntilMergingAMergeRequestD(avgLifeDays);
+
+        const avgCommits: number = commitCountSum/(mergeRequestsMap.size);
+        exportData.setAvgNoOfCommitsPerMergeRequest(avgCommits);
+
+        const avgComments: number = commentsSum/(mergeRequestsMap.size);
+        exportData.setAvgNoOfCommentsPerMergeRequest(avgComments);
+
+        const avgFirstInteractionD: number = totalFirstInteractionLifetimeD/interactionCount;
+        exportData.setAvgTimeUntilFirstInteractionD(avgFirstInteractionD);
+        const avgFirstInteractionH: number = (totalFirstInteractionLifetimeH/interactionCount)/(3600 * 1000);
+        exportData.setAvgTimeUntilFirstInteractionH(avgFirstInteractionH);
+
+        const avgConflictsPerMergeRequest: number = withConflictsCount/openCount;
+        exportData.setAvgNoOfConflictsPerMergeRequest(avgConflictsPerMergeRequest);
+
+        if (firstMergeRequestCreationData !== undefined && lastMergeRequestCreationData !== undefined) {
+            daysDifference = this.differenceInDays(firstMergeRequestCreationData, lastMergeRequestCreationData);
+            weeksDifference = daysDifference / 7;
+        }
+
+        exportData.setAvgNoOfMergeRequestsPerDay(mergeRequestsMap.size/daysDifference);
+        exportData.setAvgNoOfMergeRequestsPerWeek(mergeRequestsMap.size/weeksDifference);
+        exportData.setAvgNoOfMergedMergeRequestsPerDay(mergedCount/daysDifference);
+        exportData.setAvgNoOfMergedMergeRequestsPerWeek(mergedCount/weeksDifference);
+        exportData.setAvgNoOfUnresolvedDiscussionsPerMergeRequest(unresolvedDiscussionsReport/noOfMergeRequestsWithDiscussions);
 
         console.log(exportData);
-        console.log(membersMap.size);
-        console.log(mergeRequestsMap.size);
-        console.log(issuesMap.size);
     }
 }

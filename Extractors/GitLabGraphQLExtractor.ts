@@ -19,12 +19,20 @@ export class GitLabGraphQLClient {
     });
   }
 
-  async executeQuery(query: string): Promise<any> {
-    try {
-      const result = await this.client.request(query);
-      return result;
-    } catch (error) {
-      throw new Error(`Error executing query: ${error}`);
+  async executeQuery(query: string, retries: number = 3): Promise<any> {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const result = await this.client.request(query);
+        return result;
+      } catch (error) {
+        console.error(`Error executing query (attempt ${attempt}/${retries}):`, error);
+        if (attempt < retries) {
+          console.log(`Retrying after a delay...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+        } else {
+          throw new Error(`Failed to execute query after ${retries} attempts: ${error}`);
+        }
+      }
     }
   }
 }
