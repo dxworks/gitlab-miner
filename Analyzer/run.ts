@@ -38,10 +38,10 @@ export class MainClass {
                 createdAt: mergeRequestData.createdAt,
                 description: mergeRequestData.description,
                 diffStatsSummary: {
-                    changes: mergeRequestData.changes,
-                    fileCount: mergeRequestData.fileCount,
-                    additions: mergeRequestData.additions,
-                    deletions: mergeRequestData.deletions,
+                    changes: mergeRequestData.diffStatsSummary.changes,
+                    fileCount: mergeRequestData.diffStatsSummary.fileCount,
+                    additions: mergeRequestData.diffStatsSummary.additions,
+                    deletions: mergeRequestData.diffStatsSummary.deletions,
                 },
                 divergedFromTargetBranch: mergeRequestData.divergedFromTargetBranch,
                 downvotes: mergeRequestData.downvotes,
@@ -94,6 +94,25 @@ export class MainClass {
                 state: memberData.state,
                 mergeRequests: [],
                 issues: [],
+                noOfAuthoredMergeRequests: 0,
+                noOfMergedMergeRequests: 0,
+                noOfClosedWithoutMergeMergeRequests: 0,
+                noOfAuthoredIssues: 0,
+                noOfAllIssuesAuthored: 0,
+                noOfClosedIssuesAuthored: 0,
+                noOfLockedIssuesAuthored: 0,
+                noOfOpenedIssuesAuthored: 0,
+                noOfCriticalIssuesAuthored: 0,
+                noOfHighIssuesAuthored: 0,
+                noOfMediumIssuesAuthored: 0,
+                noOfLowIssuesAuthored: 0,
+                noOfUnknownIssuesAuthored: 0,
+                avgNoOfNotesPerAuthoredMergeRequest: 0,
+                avgNoOfDiscussionsPerAuthoredMergeRequest: 0,
+                avgNoOfFilesChangedPerAuthoredMergeRequest: 0,
+                avgNoOfChangesPerAuthoredMergeRequest: 0,
+                avgNoOfAdditionsPerAuthoredMergeRequest: 0,
+                avgNoOfDeletionsPerAuthoredMergeRequest: 0,
             };
             membersMap.set(memberData.username, member);
         }
@@ -121,7 +140,7 @@ export class MainClass {
                 labels: issueData.labels,
                 mergeRequestsCount: issueData.mergeRequestsCount,
                 moved: issueData.moved,
-                movedTo:issueData.movedTo,
+                movedTo: issueData.movedTo,
                 participants: [],
                 severity: issueData.severity,
                 state: issueData.state,
@@ -215,47 +234,51 @@ export class MainClass {
             }
         }
 
-        // Visualize mergeRequestsMap
-        console.log('Merge Requests Map:');
-        mergeRequestsMap.forEach((mergeRequest) => {
-            console.log(mergeRequest.iid);
-            console.log('Associated Assignees:', mergeRequest.assignees?.length);
-            console.log('Associated Commenters:', mergeRequest.commenters?.length);
-            console.log('Associated Committers:', mergeRequest.committers?.length);
-            console.log('Associated Participants:', mergeRequest.participants?.length);
-            console.log('Associated Reviewers:', mergeRequest.reviewers?.length);
-            // mergeRequest.assignees?.forEach(member => {
-            //     console.log(member.username);
-            // });
-            console.log('------------------');
-        });
-
-        // Visualize membersMap
-        console.log('Members Map:');
-        membersMap.forEach((member) => {
-            console.log(member.username);
-            console.log('Associated Merge Requests:', member.mergeRequests?.length);
-            console.log('Associated Issues:', member.issues?.length);
-            // member.mergeRequests?.forEach(mergeRequest => {
-            //     console.log(mergeRequest.iid);
-            // });
-            console.log('------------------');
-        });
-
-        // Visualize IssuesMap
-        console.log('Issues Map:');
-        issuesMap.forEach((issue) => {
-            console.log(issue.iid);
-            console.log('Associated Assignees:', issue.assignees?.length);
-            console.log('Associated Commenters:', issue.commenters?.length);
-            console.log('Associated Participants:', issue.participants?.length);
-            // mergeRequest.assignees?.forEach(member => {
-            //     console.log(member.username);
-            // });
-            console.log('------------------');
-        });
+        // // Visualize mergeRequestsMap
+        // console.log('Merge Requests Map:');
+        // mergeRequestsMap.forEach((mergeRequest) => {
+        //     console.log(mergeRequest.iid);
+        //     console.log('Associated Assignees:', mergeRequest.assignees?.length);
+        //     console.log('Associated Commenters:', mergeRequest.commenters?.length);
+        //     console.log('Associated Committers:', mergeRequest.committers?.length);
+        //     console.log('Associated Participants:', mergeRequest.participants?.length);
+        //     console.log('Associated Reviewers:', mergeRequest.reviewers?.length);
+        //     // mergeRequest.assignees?.forEach(member => {
+        //     //     console.log(member.username);
+        //     // });
+        //     console.log('------------------');
+        // });
+        //
+        // // Visualize membersMap
+        // console.log('Members Map:');
+        // membersMap.forEach((member) => {
+        //     console.log(member.username);
+        //     console.log('Associated Merge Requests:', member.mergeRequests?.length);
+        //     console.log('Associated Issues:', member.issues?.length);
+        //     // member.mergeRequests?.forEach(mergeRequest => {
+        //     //     console.log(mergeRequest.iid);
+        //     // });
+        //     console.log('------------------');
+        // });
+        //
+        // // Visualize IssuesMap
+        // console.log('Issues Map:');
+        // issuesMap.forEach((issue) => {
+        //     console.log(issue.iid);
+        //     console.log('Associated Assignees:', issue.assignees?.length);
+        //     console.log('Associated Commenters:', issue.commenters?.length);
+        //     console.log('Associated Participants:', issue.participants?.length);
+        //     // mergeRequest.assignees?.forEach(member => {
+        //     //     console.log(member.username);
+        //     // });
+        //     console.log('------------------');
+        // });
 
         const exportData: Export = new Export();
+        exportData.setMergeRequests(mergeRequestsMap.size);
+        exportData.setNoOfIssues(issuesMap.size);
+        exportData.setNoOfMembers(membersMap.size);
+
         let openCount: number = 0;
         let closedCount: number = 0;
         let mergedCount: number = 0;
@@ -277,6 +300,7 @@ export class MainClass {
         let noOfMergeRequestsWithDiscussions: number = 0;
         let unresolvedDiscussionsReport: number = 0;
         let withConflictsCount: number = 0;
+        let shouldEqualMRClosed: number = 0;
 
         for (let [_, mergeRequest] of mergeRequestsMap) {
             switch (mergeRequest.state) {
@@ -300,10 +324,12 @@ export class MainClass {
                         totalLifetimeD += lifetimeD;
 
                         //First and last merge request creation date to calculate the average number of merge requests per day and per week
-                        if(firstMergeRequestCreationData === undefined) {
+                        if (firstMergeRequestCreationData === undefined) {
                             firstMergeRequestCreationData = new Date(mergeRequest.createdAt);
                         }
                         lastMergeRequestCreationData = new Date(mergeRequest.createdAt);
+
+                        shouldEqualMRClosed++;
                     }
 
                     break;
@@ -311,8 +337,8 @@ export class MainClass {
                     break;
             }
 
-            commitCountSum += mergeRequest.commitCount? mergeRequest.commitCount : 0;
-            commentsSum += mergeRequest.userNotesCount? mergeRequest.userNotesCount : 0;
+            commitCountSum += mergeRequest.commitCount ? mergeRequest.commitCount : 0;
+            commentsSum += mergeRequest.userNotesCount ? mergeRequest.userNotesCount : 0;
 
             let createdAt = mergeRequest.createdAt;
             if (createdAt !== undefined) {
@@ -329,17 +355,17 @@ export class MainClass {
             }
 
             //Average time until first interaction
-            if(firstDiscussionRaw !== undefined && createdAtRaw !== undefined) {
+            if (firstDiscussionRaw !== undefined && createdAtRaw !== undefined) {
                 let lifetime = this.differenceInDays(createdAtRaw, firstDiscussionRaw);
                 totalFirstInteractionLifetimeD += lifetime;
             }
-            if(firstDiscussionTimestamp !== undefined && createdAtTimestamp !== undefined) {
+            if (firstDiscussionTimestamp !== undefined && createdAtTimestamp !== undefined) {
                 let lifetime = firstDiscussionTimestamp - createdAtTimestamp;
                 totalFirstInteractionLifetimeH += lifetime;
             }
 
             //Average number of unresolved discussions
-            if(mergeRequest.discussions !== undefined) {
+            if (mergeRequest.discussions !== undefined) {
                 let unresolvedDiscussions = 0;
                 for (let discussion of mergeRequest.discussions) {
                     if (discussion.resolved === false) {
@@ -362,24 +388,24 @@ export class MainClass {
         exportData.setClosed(closedCount);
         exportData.setMerged(mergedCount);
 
-        const avgLifeHours: number = (totalLifetimeH/mergedCount)/(3600 * 1000);
+        const avgLifeHours: number = (totalLifetimeH / mergedCount) / (3600 * 1000);
         exportData.setAvgTimeUntilMergingAMergeRequestH(avgLifeHours);
 
-        const avgLifeDays: number = (totalLifetimeD/mergedCount);
+        const avgLifeDays: number = (totalLifetimeD / mergedCount);
         exportData.setAvgTimeUntilMergingAMergeRequestD(avgLifeDays);
 
-        const avgCommits: number = commitCountSum/(mergeRequestsMap.size);
+        const avgCommits: number = commitCountSum / (mergeRequestsMap.size);
         exportData.setAvgNoOfCommitsPerMergeRequest(avgCommits);
 
-        const avgComments: number = commentsSum/(mergeRequestsMap.size);
+        const avgComments: number = commentsSum / (mergeRequestsMap.size);
         exportData.setAvgNoOfCommentsPerMergeRequest(avgComments);
 
-        const avgFirstInteractionD: number = totalFirstInteractionLifetimeD/interactionCount;
+        const avgFirstInteractionD: number = totalFirstInteractionLifetimeD / interactionCount;
         exportData.setAvgTimeUntilFirstInteractionD(avgFirstInteractionD);
-        const avgFirstInteractionH: number = (totalFirstInteractionLifetimeH/interactionCount)/(3600 * 1000);
+        const avgFirstInteractionH: number = (totalFirstInteractionLifetimeH / interactionCount) / (3600 * 1000);
         exportData.setAvgTimeUntilFirstInteractionH(avgFirstInteractionH);
 
-        const avgConflictsPerMergeRequest: number = withConflictsCount/openCount;
+        const avgConflictsPerMergeRequest: number = withConflictsCount / openCount;
         exportData.setAvgNoOfConflictsPerMergeRequest(avgConflictsPerMergeRequest);
 
         if (firstMergeRequestCreationData !== undefined && lastMergeRequestCreationData !== undefined) {
@@ -387,11 +413,219 @@ export class MainClass {
             weeksDifference = daysDifference / 7;
         }
 
-        exportData.setAvgNoOfMergeRequestsPerDay(mergeRequestsMap.size/daysDifference);
-        exportData.setAvgNoOfMergeRequestsPerWeek(mergeRequestsMap.size/weeksDifference);
-        exportData.setAvgNoOfMergedMergeRequestsPerDay(mergedCount/daysDifference);
-        exportData.setAvgNoOfMergedMergeRequestsPerWeek(mergedCount/weeksDifference);
-        exportData.setAvgNoOfUnresolvedDiscussionsPerMergeRequest(unresolvedDiscussionsReport/noOfMergeRequestsWithDiscussions);
+        exportData.setAvgNoOfMergeRequestsPerDay(mergeRequestsMap.size / daysDifference);
+        exportData.setAvgNoOfMergeRequestsPerWeek(mergeRequestsMap.size / weeksDifference);
+        exportData.setAvgNoOfMergedMergeRequestsPerDay(mergedCount / daysDifference);
+        exportData.setAvgNoOfMergedMergeRequestsPerWeek(mergedCount / weeksDifference);
+        exportData.setAvgNoOfUnresolvedDiscussionsPerMergeRequest(unresolvedDiscussionsReport / noOfMergeRequestsWithDiscussions);
+
+        //console.log(exportData);
+
+        for (let [_, member] of membersMap) {
+            let totalNotesCount: number = 0;
+            let totalDiscussionsCount: number = 0;
+            let totalFilesChanged: number = 0;
+            let totalChanges: number = 0;
+            let totalAdditions: number = 0;
+            let totalDeletions: number = 0;
+
+            for (let [_, mergeRequest] of mergeRequestsMap) {
+                if (mergeRequest.author === member.username) {
+                    member.noOfAuthoredMergeRequests++;
+
+                    if (mergeRequest.state === 'closed') {
+                        member.noOfClosedWithoutMergeMergeRequests++;
+                    }
+
+                    if (mergeRequest.userNotesCount !== undefined) {
+                        totalNotesCount += mergeRequest.userNotesCount;
+                    }
+                    if (mergeRequest.userDiscussionsCount !== undefined) {
+                        totalDiscussionsCount += mergeRequest.userDiscussionsCount;
+                    }
+
+                    if (mergeRequest.diffStatsSummary !== undefined) {
+                        if (mergeRequest.diffStatsSummary.fileCount !== undefined) {
+                            totalFilesChanged += mergeRequest.diffStatsSummary.fileCount;
+                        }
+                        if (mergeRequest.diffStatsSummary.changes !== undefined) {
+                            totalChanges += mergeRequest.diffStatsSummary.changes;
+                        }
+                        if (mergeRequest.diffStatsSummary.additions !== undefined) {
+                            totalAdditions += mergeRequest.diffStatsSummary.additions;
+                        }
+                        if (mergeRequest.diffStatsSummary.deletions !== undefined) {
+                            totalDeletions += mergeRequest.diffStatsSummary.deletions;
+                        }
+                    }
+                }
+
+                if (mergeRequest.mergeUser === member.username) {
+                    member.noOfMergedMergeRequests++;
+                }
+            }
+            if (member.noOfAuthoredMergeRequests !== 0) {
+                member.avgNoOfNotesPerAuthoredMergeRequest = totalNotesCount / member.noOfAuthoredMergeRequests;
+                member.avgNoOfDiscussionsPerAuthoredMergeRequest = totalDiscussionsCount / member.noOfAuthoredMergeRequests;
+                member.avgNoOfFilesChangedPerAuthoredMergeRequest = totalFilesChanged / member.noOfAuthoredMergeRequests;
+                member.avgNoOfChangesPerAuthoredMergeRequest = totalChanges / member.noOfAuthoredMergeRequests;
+                member.avgNoOfAdditionsPerAuthoredMergeRequest = totalAdditions / member.noOfAuthoredMergeRequests;
+                member.avgNoOfDeletionsPerAuthoredMergeRequest = totalDeletions / member.noOfAuthoredMergeRequests;
+            }
+
+            for (let [_, issue] of issuesMap) {
+                if (issue.author === member.username) {
+                    member.noOfAuthoredIssues++;
+
+                    switch (issue.state) {
+                        case 'all':
+                            member.noOfAllIssuesAuthored++;
+                            break;
+                        case 'closed':
+                            member.noOfClosedIssuesAuthored++;
+                            break;
+                        case 'locked':
+                            member.noOfLockedIssuesAuthored++;
+                            break;
+                        case 'opened':
+                            member.noOfOpenedIssuesAuthored++;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    switch (issue.severity) {
+                        case 'CRITICAL':
+                            member.noOfCriticalIssuesAuthored++;
+                            break;
+                        case 'HIGH':
+                            member.noOfHighIssuesAuthored++;
+                            break;
+                        case 'LOW':
+                            member.noOfLowIssuesAuthored++;
+                            break;
+                        case 'MEDIUM':
+                            member.noOfMediumIssuesAuthored++;
+                            break;
+                        case 'UNKNOWN':
+                            member.noOfUnknownIssuesAuthored++;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        let noOfCriticalIssuesAuthored: number = 0;
+        let noOfHighIssuesAuthored: number = 0;
+        let noOfMediumIssuesAuthored: number = 0;
+        let noOfLowIssuesAuthored: number = 0;
+        let noOfUnknownIssuesAuthored: number = 0;
+        let totalIssuesLifetimeH: number = 0;
+        let totalIssuesLifetimeD: number = 0;
+        let noOfAllIssues: number = 0;
+        let noOfClosedIssues: number = 0;
+        let noOfLockedIssues: number = 0;
+        let noOfOpenedIssues: number = 0;
+        let shouldEqualIClosed = 0;
+        for (let [_, issue] of issuesMap) {
+            switch (issue.state) {
+                case 'all':
+                    noOfAllIssues++;
+                    break;
+                case 'closed':
+                    noOfClosedIssues++;
+                    break;
+                case 'locked':
+                    noOfLockedIssues++;
+                    break;
+                case 'opened':
+                    noOfOpenedIssues++;
+                    break;
+                default:
+                    break;
+            }
+            switch (issue.severity) {
+                case 'CRITICAL':
+                    noOfCriticalIssuesAuthored++;
+                    break;
+                case 'HIGH':
+                    noOfHighIssuesAuthored++;
+                    break;
+                case 'LOW':
+                    noOfLowIssuesAuthored++;
+                    break;
+                case 'MEDIUM':
+                    noOfMediumIssuesAuthored++;
+                    break;
+                case 'UNKNOWN':
+                    noOfUnknownIssuesAuthored++;
+                    break;
+                default:
+                    break;
+            }
+
+            if (issue.createdAt !== undefined && issue.closedAt !== undefined && issue.closedAt !== null && issue.createdAt !== null) {
+                let createdAt = issue.createdAt;
+                let createdAtRaw = new Date(createdAt);
+                let createdAtTimestamp = new Date(createdAt).getTime();
+
+                let closedAt = issue.closedAt;
+                let closedAtRaw = new Date(closedAt);
+                let closedAtTimestamp = new Date(closedAt).getTime();
+
+                let lifetimeH = closedAtTimestamp - createdAtTimestamp;
+                let lifetimeD = this.differenceInDays(closedAtRaw, createdAtRaw);
+                console.log('Lifetime in days:', issue.iid, lifetimeD);
+                totalIssuesLifetimeH += lifetimeH;
+                totalIssuesLifetimeD += lifetimeD;
+
+                shouldEqualIClosed++;
+            }
+        }
+
+        console.log('Should equal MR closed:', shouldEqualMRClosed);
+        console.log('Should equal I closed:', shouldEqualIClosed);
+        exportData.setAllIssues(noOfAllIssues);
+        exportData.setClosedIssues(noOfClosedIssues);
+        exportData.setLockedIssues(noOfLockedIssues);
+        exportData.setOpenedIssues(noOfOpenedIssues);
+        exportData.setCritical(noOfCriticalIssuesAuthored);
+        exportData.setHigh(noOfHighIssuesAuthored);
+        exportData.setMedium(noOfMediumIssuesAuthored);
+        exportData.setLow(noOfLowIssuesAuthored);
+        exportData.setUnknown(noOfUnknownIssuesAuthored);
+        exportData.setAvgIssueResolveTimeD(totalIssuesLifetimeD / noOfClosedIssues);
+        exportData.setAvgIssueResolveTimeH((totalIssuesLifetimeH / noOfClosedIssues) / (3600 * 1000));
+
+        // Visualize membersMap
+        console.log('Members Map:');
+        membersMap.forEach((member) => {
+            console.log(member.username);
+            console.log('Associated(assigned to) Merge Requests:', member.mergeRequests?.length);
+            console.log('Associated(assigned to) Issues:', member.issues?.length);
+            console.log('#No of Authored Issues:', member.noOfAuthoredIssues);
+            console.log('#No of All Issues Authored:', member.noOfAllIssuesAuthored);
+            console.log('#No of Closed Issues Authored:', member.noOfClosedIssuesAuthored);
+            console.log('#No of Locked Issues Authored:', member.noOfLockedIssuesAuthored);
+            console.log('#No of Opened Issues Authored:', member.noOfOpenedIssuesAuthored);
+            console.log('#No of Critical Severity Issues Authored:', member.noOfCriticalIssuesAuthored);
+            console.log('#No of High Severity Issues Authored:', member.noOfHighIssuesAuthored);
+            console.log('#No of Medium Severity Issues Authored:', member.noOfMediumIssuesAuthored);
+            console.log('#No of Low Severity Issues Authored:', member.noOfLowIssuesAuthored);
+            console.log('#No of Unknown Severity Issues Authored:', member.noOfUnknownIssuesAuthored);
+            console.log('#No of Authored Merge Requests:', member.noOfAuthoredMergeRequests);
+            console.log('#No of Merged Merge Requests:', member.noOfMergedMergeRequests);
+            console.log('#No of Closed Without Merge Merge Requests:', member.noOfClosedWithoutMergeMergeRequests);
+            console.log('Avg no of Notes per Authored MR:', member.avgNoOfNotesPerAuthoredMergeRequest);
+            console.log('Avg no of Discussions per Authored MR:', member.avgNoOfDiscussionsPerAuthoredMergeRequest);
+            console.log('Avg no of Files Changed per Authored MR:', member.avgNoOfFilesChangedPerAuthoredMergeRequest);
+            console.log('Avg no of Changes per Authored MR:', member.avgNoOfChangesPerAuthoredMergeRequest);
+            console.log('Avg no of Additions per Authored MR:', member.avgNoOfAdditionsPerAuthoredMergeRequest);
+            console.log('Avg no of Deletions per Authored MR:', member.avgNoOfDeletionsPerAuthoredMergeRequest);
+            console.log('------------------');
+        });
 
         console.log(exportData);
     }
