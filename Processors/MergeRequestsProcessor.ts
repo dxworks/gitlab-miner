@@ -21,7 +21,7 @@ export class MergeRequestsProcessor {
     }
 
     async writeDataToJsonFile() {
-        const filename = `Graphviz.json`;
+        const filename = `Octopus.json`;
         await fs.writeFile(filename, JSON.stringify(this.allData, null, 2) + '\n');
     }
 
@@ -228,7 +228,7 @@ export class MergeRequestsProcessor {
             assignees: issue.assignees.nodes.map((node: any) => {
                 return this.mapMember(node);
             }),
-            author: issue.author.id,
+            author: issue.author.username,
             blocked: issue.blocked,
             blockedByCount: issue.blockedByCount,
             blockingCount: issue.blockingCount,
