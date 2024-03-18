@@ -17,6 +17,7 @@ export class Member {
     issues?: Issue[];
 
     noOfAuthoredMergeRequests: number = 0;
+    noOfOthersMergeRequestsCommentedOn: number = 0;
     noOfMergedMergeRequests: number = 0;
     noOfAuthoredIssues: number = 0;
     noOfAllIssuesAuthored: number = 0;
@@ -35,7 +36,10 @@ export class Member {
     avgNoOfChangesPerAuthoredMergeRequest: number = 0;
     avgNoOfAdditionsPerAuthoredMergeRequest: number = 0;
     avgNoOfDeletionsPerAuthoredMergeRequest: number = 0;
-
+    commentedOnOthersMergeRequestsProc: number = 0;
+    avgNoOfNotesOnOthersMergeRequest: number = 0;
+    commentedOnOwnMergeRequestsProc: number = 0;
+    avgNoOfNotesOnAuthoredMergeRequest: number = 0;
     
     // setName(name: string): void {
     //     this.name = name;

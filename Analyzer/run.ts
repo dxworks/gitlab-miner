@@ -94,7 +94,9 @@ export class MainClass {
                 state: memberData.state,
                 mergeRequests: [],
                 issues: [],
+
                 noOfAuthoredMergeRequests: 0,
+                noOfOthersMergeRequestsCommentedOn: 0,
                 noOfMergedMergeRequests: 0,
                 noOfClosedWithoutMergeMergeRequests: 0,
                 noOfAuthoredIssues: 0,
@@ -113,6 +115,10 @@ export class MainClass {
                 avgNoOfChangesPerAuthoredMergeRequest: 0,
                 avgNoOfAdditionsPerAuthoredMergeRequest: 0,
                 avgNoOfDeletionsPerAuthoredMergeRequest: 0,
+                avgNoOfNotesOnOthersMergeRequest: 0,
+                commentedOnOthersMergeRequestsProc: 0,
+                avgNoOfNotesOnAuthoredMergeRequest: 0,
+                commentedOnOwnMergeRequestsProc: 0,
             };
             membersMap.set(memberData.username, member);
         }
@@ -291,12 +297,12 @@ export class MainClass {
         let daysDifference: number = 0;
         let weeksDifference: number = 0;
         let createdAtTimestamp: number | undefined;
-        let firstDiscussionTimestamp: number | undefined;
+        let firstAuthoredDiscussionTimestamp: number | undefined;
         let totalFirstInteractionLifetimeH: number = 0;
         let totalFirstInteractionLifetimeD: number = 0;
         let interactionCount: number = 0;
         let createdAtRaw: Date | undefined;
-        let firstDiscussionRaw: Date | undefined;
+        let firstAuthoredDiscussionRaw: Date | undefined;
         let noOfMergeRequestsWithDiscussions: number = 0;
         let unresolvedDiscussionsReport: number = 0;
         let withConflictsCount: number = 0;
@@ -348,19 +354,19 @@ export class MainClass {
 
             let firstDiscussionCreatedAt = mergeRequest.discussions?.at(0)?.createdAt;
             if (firstDiscussionCreatedAt !== undefined) {
-                firstDiscussionRaw = new Date(firstDiscussionCreatedAt);
-                firstDiscussionTimestamp = new Date(firstDiscussionCreatedAt).getTime();
+                firstAuthoredDiscussionRaw = new Date(firstDiscussionCreatedAt);
+                firstAuthoredDiscussionTimestamp = new Date(firstDiscussionCreatedAt).getTime();
 
                 interactionCount++;
             }
 
             //Average time until first interaction
-            if (firstDiscussionRaw !== undefined && createdAtRaw !== undefined) {
-                let lifetime = this.differenceInDays(createdAtRaw, firstDiscussionRaw);
+            if (firstAuthoredDiscussionRaw !== undefined && createdAtRaw !== undefined) {
+                let lifetime = this.differenceInDays(createdAtRaw, firstAuthoredDiscussionRaw);
                 totalFirstInteractionLifetimeD += lifetime;
             }
-            if (firstDiscussionTimestamp !== undefined && createdAtTimestamp !== undefined) {
-                let lifetime = firstDiscussionTimestamp - createdAtTimestamp;
+            if (firstAuthoredDiscussionTimestamp !== undefined && createdAtTimestamp !== undefined) {
+                let lifetime = firstAuthoredDiscussionTimestamp - createdAtTimestamp;
                 totalFirstInteractionLifetimeH += lifetime;
             }
 
@@ -419,8 +425,6 @@ export class MainClass {
         exportData.setAvgNoOfMergedMergeRequestsPerWeek(mergedCount / weeksDifference);
         exportData.setAvgNoOfUnresolvedDiscussionsPerMergeRequest(unresolvedDiscussionsReport / noOfMergeRequestsWithDiscussions);
 
-        //console.log(exportData);
-
         for (let [_, member] of membersMap) {
             let totalNotesCount: number = 0;
             let totalDiscussionsCount: number = 0;
@@ -428,6 +432,10 @@ export class MainClass {
             let totalChanges: number = 0;
             let totalAdditions: number = 0;
             let totalDeletions: number = 0;
+            let noOfMergeRequestsWhereMemberCommented: number = 0;
+            let NoOfNotesOnOthersMergeRequest: number = 0;
+            let noOfAuthoredMergeRequestsWhereMemberCommented: number = 0;
+            let NoOfNotesOnAuthoredMergeRequest: number = 0;
 
             for (let [_, mergeRequest] of mergeRequestsMap) {
                 if (mergeRequest.author === member.username) {
@@ -458,6 +466,42 @@ export class MainClass {
                             totalDeletions += mergeRequest.diffStatsSummary.deletions;
                         }
                     }
+
+                    if (mergeRequest.discussions !== undefined) {
+                        let commented: boolean = false;
+                        for (let discussion of mergeRequest.discussions) {
+                            if (discussion.notes !== undefined) {
+                                for (let note of discussion.notes) {
+                                    if (note.author === member.username) {
+                                        NoOfNotesOnAuthoredMergeRequest++;
+                                        commented = true;
+                                    }
+                                }
+                            }
+                        }
+                        if (commented) {
+                            noOfAuthoredMergeRequestsWhereMemberCommented++;
+                        }
+                    }
+                }
+                else {
+                    member.noOfOthersMergeRequestsCommentedOn++;
+                    if (mergeRequest.discussions !== undefined) {
+                        let commented: boolean = false;
+                        for (let discussion of mergeRequest.discussions) {
+                            if (discussion.notes !== undefined) {
+                                for (let note of discussion.notes) {
+                                    if (note.author === member.username) {
+                                        NoOfNotesOnOthersMergeRequest++;
+                                        commented = true;
+                                    }
+                                }
+                            }
+                        }
+                        if (commented) {
+                            noOfMergeRequestsWhereMemberCommented++;
+                        }
+                    }
                 }
 
                 if (mergeRequest.mergeUser === member.username) {
@@ -471,6 +515,14 @@ export class MainClass {
                 member.avgNoOfChangesPerAuthoredMergeRequest = totalChanges / member.noOfAuthoredMergeRequests;
                 member.avgNoOfAdditionsPerAuthoredMergeRequest = totalAdditions / member.noOfAuthoredMergeRequests;
                 member.avgNoOfDeletionsPerAuthoredMergeRequest = totalDeletions / member.noOfAuthoredMergeRequests;
+            }
+            if (noOfAuthoredMergeRequestsWhereMemberCommented !== 0) {
+                member.avgNoOfNotesOnAuthoredMergeRequest = NoOfNotesOnAuthoredMergeRequest / noOfAuthoredMergeRequestsWhereMemberCommented;
+                member.commentedOnOwnMergeRequestsProc = noOfAuthoredMergeRequestsWhereMemberCommented / member.noOfAuthoredMergeRequests;
+            }
+            if (noOfMergeRequestsWhereMemberCommented !== 0) {
+                member.avgNoOfNotesOnOthersMergeRequest = NoOfNotesOnOthersMergeRequest / noOfMergeRequestsWhereMemberCommented;
+                member.commentedOnOthersMergeRequestsProc = noOfMergeRequestsWhereMemberCommented / member.noOfOthersMergeRequestsCommentedOn;
             }
 
             for (let [_, issue] of issuesMap) {
@@ -577,7 +629,6 @@ export class MainClass {
 
                 let lifetimeH = closedAtTimestamp - createdAtTimestamp;
                 let lifetimeD = this.differenceInDays(closedAtRaw, createdAtRaw);
-                console.log('Lifetime in days:', issue.iid, lifetimeD);
                 totalIssuesLifetimeH += lifetimeH;
                 totalIssuesLifetimeD += lifetimeD;
 
@@ -585,8 +636,8 @@ export class MainClass {
             }
         }
 
-        console.log('Should equal MR closed:', shouldEqualMRClosed);
-        console.log('Should equal I closed:', shouldEqualIClosed);
+        // console.log('Should equal MR closed:', shouldEqualMRClosed);
+        // console.log('Should equal I closed:', shouldEqualIClosed);
         exportData.setAllIssues(noOfAllIssues);
         exportData.setClosedIssues(noOfClosedIssues);
         exportData.setLockedIssues(noOfLockedIssues);
@@ -600,7 +651,9 @@ export class MainClass {
         exportData.setAvgIssueResolveTimeH((totalIssuesLifetimeH / noOfClosedIssues) / (3600 * 1000));
 
         // Visualize membersMap
-        console.log('Members Map:');
+        console.log("----------------");
+        console.log('| Members Map: |');
+        console.log("----------------");
         membersMap.forEach((member) => {
             console.log(member.username);
             console.log('Associated(assigned to) Merge Requests:', member.mergeRequests?.length);
@@ -616,6 +669,7 @@ export class MainClass {
             console.log('#No of Low Severity Issues Authored:', member.noOfLowIssuesAuthored);
             console.log('#No of Unknown Severity Issues Authored:', member.noOfUnknownIssuesAuthored);
             console.log('#No of Authored Merge Requests:', member.noOfAuthoredMergeRequests);
+            console.log('#No of Others Merge Requests User commented On:', member.noOfOthersMergeRequestsCommentedOn);
             console.log('#No of Merged Merge Requests:', member.noOfMergedMergeRequests);
             console.log('#No of Closed Without Merge Merge Requests:', member.noOfClosedWithoutMergeMergeRequests);
             console.log('Avg no of Notes per Authored MR:', member.avgNoOfNotesPerAuthoredMergeRequest);
@@ -624,6 +678,10 @@ export class MainClass {
             console.log('Avg no of Changes per Authored MR:', member.avgNoOfChangesPerAuthoredMergeRequest);
             console.log('Avg no of Additions per Authored MR:', member.avgNoOfAdditionsPerAuthoredMergeRequest);
             console.log('Avg no of Deletions per Authored MR:', member.avgNoOfDeletionsPerAuthoredMergeRequest);
+            console.log('Commented on Others Merge Requests Proc:', member.commentedOnOthersMergeRequestsProc);
+            console.log('Avg no of Notes on Others MR:', member.avgNoOfNotesOnOthersMergeRequest);
+            console.log('Commented on Own Merge Requests Proc:', member.commentedOnOwnMergeRequestsProc);
+            console.log('Avg no of Notes on Authored MR:', member.avgNoOfNotesOnAuthoredMergeRequest);
             console.log('------------------');
         });
 
