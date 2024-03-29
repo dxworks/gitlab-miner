@@ -21,7 +21,7 @@ export class MergeRequestsProcessor {
     }
 
     async writeDataToJsonFile() {
-        const filename = `Octopus.json`;
+        const filename = `projectData.json`;
         await fs.writeFile(filename, JSON.stringify(this.allData, null, 2) + '\n');
     }
 
