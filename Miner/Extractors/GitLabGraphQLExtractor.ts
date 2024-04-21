@@ -1,4 +1,3 @@
-import { GraphQLClient } from 'graphql-request';
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import {GitLabGraphQLClient} from "./GitLabGraphQLClient";

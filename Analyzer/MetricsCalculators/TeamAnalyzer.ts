@@ -2,7 +2,6 @@ import {Member} from "../Models/Member";
 import {MergeRequest} from "../Models/MergeRequest";
 import {Issue} from "../Models/Issue";
 import fs from "fs/promises";
-import {allData} from "../../app";
 
 export interface TeamNode {
     username: string | undefined;
