@@ -1,6 +1,6 @@
 import { Member } from "./Member";
-import {Label} from "../../Types/Label";
-import {Commit} from "../../Types/Commit";
+import {Label} from "../../Miner/Types/Label";
+import {Commit} from "../../Miner/Types/Commit";
 import {Discussion} from "./Discussion";
 
 export class MergeRequest {

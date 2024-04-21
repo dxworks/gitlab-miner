@@ -40,6 +40,13 @@ export class Member {
     avgNoOfNotesOnOthersMergeRequest: number = 0;
     commentedOnOwnMergeRequestsProc: number = 0;
     avgNoOfNotesOnAuthoredMergeRequest: number = 0;
+
+    totalNotesCount: number = 0;
+    totalDiscussionsCount: number = 0;
+    totalFilesChanged: number = 0;
+    totalChanges: number = 0;
+    totalAdditions: number = 0;
+    totalDeletions: number = 0;
     
     // setName(name: string): void {
     //     this.name = name;
