@@ -54,9 +54,9 @@ export class TeamAnalyzer {
                         mergeRequest.reviewers !== undefined &&
                         mergeRequest.approvedBy !== undefined) {
                     this.updateEdgeWeight(member.username, mergeRequest.assignees, 0.5);
-                    this.updateEdgeWeight(member.username, mergeRequest.commenters, 0.5);
+                    this.updateEdgeWeight(member.username, mergeRequest.commenters, 1);
                     this.updateEdgeWeight(member.username, mergeRequest.reviewers, 0.5);
-                    this.updateEdgeWeight(member.username, mergeRequest.approvedBy, 0.5);
+                    this.updateEdgeWeight(member.username, mergeRequest.approvedBy, 1);
                     }
                 }
             }
@@ -65,7 +65,7 @@ export class TeamAnalyzer {
                 if (issue.author === member.username && member.username !== undefined) {
                     if (issue.assignees !== undefined && issue.commenters !== undefined) {
                         this.updateEdgeWeight(member.username, issue.assignees, 0.5);
-                        this.updateEdgeWeight(member.username, issue.commenters, 0.5);
+                        this.updateEdgeWeight(member.username, issue.commenters, 1);
                     }
                 }
             }
