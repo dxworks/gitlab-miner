@@ -53,10 +53,10 @@ export class TeamAnalyzer {
                         mergeRequest.commenters !== undefined &&
                         mergeRequest.reviewers !== undefined &&
                         mergeRequest.approvedBy !== undefined) {
-                    this.updateEdgeWeight(member.username, mergeRequest.assignees, 0.5);
-                    this.updateEdgeWeight(member.username, mergeRequest.commenters, 1);
-                    this.updateEdgeWeight(member.username, mergeRequest.reviewers, 0.5);
-                    this.updateEdgeWeight(member.username, mergeRequest.approvedBy, 1);
+                        this.updateEdgeWeight(member.username, mergeRequest.assignees, 0.5);
+                        this.updateEdgeWeight(member.username, mergeRequest.reviewers, 1);
+                        this.updateEdgeWeight(member.username, mergeRequest.approvedBy, 2);
+                        this.updateEdgeWeight(member.username, mergeRequest.commenters, 3);
                     }
                 }
             }
@@ -64,8 +64,8 @@ export class TeamAnalyzer {
             for (let [_, issue] of issuesMap) {
                 if (issue.author === member.username && member.username !== undefined) {
                     if (issue.assignees !== undefined && issue.commenters !== undefined) {
-                        this.updateEdgeWeight(member.username, issue.assignees, 0.5);
-                        this.updateEdgeWeight(member.username, issue.commenters, 1);
+                        this.updateEdgeWeight(member.username, issue.assignees, 4);
+                        this.updateEdgeWeight(member.username, issue.commenters, 5);
                     }
                 }
             }
@@ -83,12 +83,12 @@ export class TeamAnalyzer {
             let targetUsername: string | undefined = typeof targetMember === 'string' ? targetMember : targetMember.username;
 
             let edge: TeamEdge | undefined = this.teamInteraction.edges.find((edge: TeamEdge) => edge.source === sourceMember && edge.target === targetUsername);
-            if (edge) {
-                edge.weight += interactionWeight;
+            if (edge !== undefined && edge.weight < interactionWeight) {
+                edge.weight++;
             }
             edge = this.teamInteraction.edges.find((edge: TeamEdge) => edge.source === targetUsername && edge.target === sourceMember);
-            if (edge) {
-                edge.weight += interactionWeight;
+            if (edge !== undefined && edge.weight < interactionWeight) {
+                edge.weight++;
             }
         }
     }
