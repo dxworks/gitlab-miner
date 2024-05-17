@@ -1,8 +1,6 @@
 import {Label} from "./Label";
 import {Commit} from "./Commit";
-
-class Discussion {
-}
+import {Discussion} from "./Discussion";
 
 export type MergeRequest = {
     iid?: string;

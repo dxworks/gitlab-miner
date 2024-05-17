@@ -1,6 +1,7 @@
 import {Issue} from "../Models/Issue";
 import {MergeRequest} from "../Models/MergeRequest";
 import {Member} from "../Models/Member";
+import fs from "fs/promises";
 
 export class MembersAnalyzer {
     public analyzeMembers(membersMap: Map<String, Member>, mergeRequestsMap: Map<String, MergeRequest>, issuesMap: Map<String, Issue>) {
@@ -79,6 +80,9 @@ export class MembersAnalyzer {
                 }
             }
         }
+
+        const membersArray: Member[] = Array.from(membersMap.values());
+        this.writeMapToJsonFile(membersArray);
     }
 
     private calculateMergeRequestStatistics(mergeRequest: MergeRequest, totalFilesChanged: number, totalChanges: number, totalAdditions: number, totalDeletions: number) {
@@ -166,5 +170,9 @@ export class MembersAnalyzer {
             default:
                 break;
         }
+    }
+
+    private async writeMapToJsonFile(membersArray: Member[]) {
+        fs.writeFile(`MembersModel.json`, JSON.stringify(membersArray, null, 2));
     }
 }

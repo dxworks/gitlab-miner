@@ -258,6 +258,8 @@ export class Linker {
         this.membersAnalyzer.analyzeMembers(membersMap, mergeRequestsMap, issuesMap);
         this.teamAnalyzer.analyzeTeam(membersMap, mergeRequestsMap, issuesMap);
 
+        this.writeProjectMetricsToJsonFile(exportData);
+
         // Visualize membersMap
         // console.log("----------------");
         // console.log('| Members Map: |');
@@ -294,5 +296,9 @@ export class Linker {
         // });
         //
         // console.log(exportData);
+    }
+
+    private async writeProjectMetricsToJsonFile(exportData: Export) {
+        fs.writeFile(`ProjectMetrics.json`, JSON.stringify(exportData, null, 2));
     }
 }
