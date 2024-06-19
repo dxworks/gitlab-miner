@@ -6,6 +6,8 @@ export interface AppConfig {
   gitlabApiUrl: string;
   projectFullPath: string;
   tokens: string[];
+  minLinkValue: number;
+  minMemberLinks: number;
 }
 
 export class GitLabGraphQLExtractor {
@@ -357,7 +359,7 @@ export class GitLabGraphQLExtractor {
     return {issues, hasNextPage, endCursor};
   }
 
-  async fetchRelatedMergeRequests(issueIid: number) {
+  private async fetchRelatedMergeRequests(issueIid: number) {
     const config: AppConfig = await this.readConfig();
 
     const query = `
@@ -384,7 +386,7 @@ export class GitLabGraphQLExtractor {
     return relatedMergeRequests;
   }
 
-  async fetchDiscussions(issueIid: number) {
+  private async fetchDiscussions(issueIid: number) {
     const config: AppConfig = await this.readConfig();
 
     const query = `
@@ -548,5 +550,10 @@ export class GitLabGraphQLExtractor {
     let projectMemebers = result.project.projectMembers.nodes;
 
     return projectMemebers;
+  }
+
+  async getGraphParameters() {
+    const config: AppConfig = await this.readConfig();
+    return {minLinkValue: config.minLinkValue, minMemberLinks: config.minMemberLinks};
   }
 }

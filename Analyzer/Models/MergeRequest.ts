@@ -1,6 +1,6 @@
 import { Member } from "./Member";
 import {Label} from "../../Miner/Types/Label";
-import {Commit} from "../../Miner/Types/Commit";
+import {Commit} from "./Commit";
 import {Discussion} from "./Discussion";
 
 export class MergeRequest {
@@ -56,28 +56,4 @@ export class MergeRequest {
     userNotesCount: number | undefined;
     commits: Commit[] | undefined;
     discussions: Discussion[] | undefined;
-
-    // setIid (iid: string): void {
-    //     this.iid = iid;
-    // }
-
-    // setTitle(title: string): void {
-    //     this.title = title;
-    // }
-
-    // setState(state: string): void {
-    //     this.state = state;
-    // }
-
-    // getIid(): string | undefined {
-    //     return this.iid;
-    // }
-
-    // getTitle(): string | undefined {
-    //     return this.title;
-    // }
-
-    // getState(): string | undefined {
-    //     return this.state;
-    // }
 }

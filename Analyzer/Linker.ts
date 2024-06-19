@@ -8,6 +8,8 @@ import {IssuesAnalyzer} from "./MetricsCalculators/IssuesAnalyzer";
 import {MembersAnalyzer} from "./MetricsCalculators/MembersAnalyzer";
 import {TeamAnalyzer} from "./MetricsCalculators/TeamAnalyzer";
 
+const folderPath = 'results';
+
 export class Linker {
     mergeRequestAnalyzer: MergeRequestsAnalyzer = new MergeRequestsAnalyzer();
     issuesAnalyzer: IssuesAnalyzer = new IssuesAnalyzer();
@@ -21,6 +23,8 @@ export class Linker {
         let mergeRequestsMap: Map<String, MergeRequest> = new Map<String, MergeRequest>();
         let membersMap: Map<String, Member> = new Map<String, Member>();
         let issuesMap: Map<String, Issue> = new Map<String, Issue>();
+
+        let teamGraphParameters = jsonData.teamGraphParameters;
 
         for (let mergeRequestData of jsonData.mergeRequests) {
             let mergeRequest: MergeRequest = {
@@ -97,11 +101,12 @@ export class Linker {
                 issues: [],
 
                 noOfAuthoredMergeRequests: 0,
-                noOfOthersMergeRequestsCommentedOn: 0,
+                noOfOthersMergeRequests: 0,
+                noOfAuthoredMergeRequestsWhereMemberCommented: 0,
+                noOfOthersMergeRequestsWhereMemberCommented: 0,
                 noOfMergedMergeRequests: 0,
                 noOfClosedWithoutMergeMergeRequests: 0,
                 noOfAuthoredIssues: 0,
-                noOfAllIssuesAuthored: 0,
                 noOfClosedIssuesAuthored: 0,
                 noOfLockedIssuesAuthored: 0,
                 noOfOpenedIssuesAuthored: 0,
@@ -110,7 +115,7 @@ export class Linker {
                 noOfMediumIssuesAuthored: 0,
                 noOfLowIssuesAuthored: 0,
                 noOfUnknownIssuesAuthored: 0,
-                avgNoOfNotesPerAuthoredMergeRequest: 0,
+                //avgNoOfNotesPerAuthoredMergeRequest: 0,
                 avgNoOfDiscussionsPerAuthoredMergeRequest: 0,
                 avgNoOfFilesChangedPerAuthoredMergeRequest: 0,
                 avgNoOfChangesPerAuthoredMergeRequest: 0,
@@ -256,9 +261,15 @@ export class Linker {
         this.mergeRequestAnalyzer.analyzeMergeRequests(exportData, mergeRequestsMap);
         this.issuesAnalyzer.analyzeIssues(exportData, issuesMap);
         this.membersAnalyzer.analyzeMembers(membersMap, mergeRequestsMap, issuesMap);
-        this.teamAnalyzer.analyzeTeam(membersMap, mergeRequestsMap, issuesMap);
+        this.teamAnalyzer.analyzeTeam(membersMap, mergeRequestsMap, issuesMap, teamGraphParameters);
 
         this.writeProjectMetricsToJsonFile(exportData);
+        this.writeMergeRequestsTypes(exportData);
+        this.writeIssuesTypes(exportData);
+        this.writeIssuesSeverity(exportData);
+
+        // this.writeAvgTime(exportData);
+        // this.writeMetrics(exportData);
 
         // Visualize membersMap
         // console.log("----------------");
@@ -296,9 +307,75 @@ export class Linker {
         // });
         //
         // console.log(exportData);
+
+
     }
 
     private async writeProjectMetricsToJsonFile(exportData: Export) {
-        fs.writeFile(`ProjectMetrics.json`, JSON.stringify(exportData, null, 2));
+        fs.writeFile(`${folderPath}/ProjectMetrics.json`, JSON.stringify(exportData, null, 2));
     }
+
+    private async writeMergeRequestsTypes(exportData: Export) {
+         let values: any = {
+             values: {
+                 "Open Merge Requests": exportData.noOfOpenMergeRequests,
+                 "Closed Merge Requests": exportData.noOfClosedMergeRequests,
+                 "Merged Merge Requests": exportData.noOfMergedMergeRequests,
+             }
+        };
+        fs.writeFile(`${folderPath}/MergeRequestsState.json`, JSON.stringify(values, null, 2));
+    }
+
+    private async writeIssuesTypes(exportData: Export) {
+        let values: any = {
+            values: {
+                "Open Issues": exportData.noOfOpenIssues,
+                "Closed Issues": exportData.noOfClosedIssues,
+                "Locked Issues": exportData.noOfLockedIssues,
+            }
+        };
+        fs.writeFile(`${folderPath}/IssuesState.json`, JSON.stringify(values, null, 2));
+    }
+
+    private async writeIssuesSeverity(exportData: Export) {
+        let values: any = {
+            headers: ["Issues - Severity Report"],
+            values: {
+                "Critical Severity Issues": [exportData.noOfCriticalSeverityIssues],
+                "High Severity Issues": [exportData.noOfHighSeverityIssues],
+                "Medium Severity Issues": [exportData.noOfMediumSeverityIssues],
+                "Low Severity Issues": [exportData.noOfLowSeverityIssues],
+                "Unknown Severity Issues": [exportData.noOfUnknownSeverityIssues],
+            }
+        };
+        fs.writeFile(`${folderPath}/IssuesSeverity.json`, JSON.stringify(values, null, 2));
+    }
+
+    // private async writeAvgTime(exportData: Export) {
+    //     let values: any = {
+    //         headers: ["Hours", "Days"],
+    //         values: {
+    //             "Average Time Until Merging a Merge Request": [exportData.avgTimeUntilMergingAMergeRequestH, exportData.avgTimeUntilMergingAMergeRequestD],
+    //             "Average Time Until First Interaction": [exportData.avgTimeUntilFirstInteractionH, exportData.avgTimeUntilFirstInteractionD],
+    //         }
+    //     };
+    //     fs.writeFile(`${folderPath}/MRsAverageTime.json`, JSON.stringify(values, null, 2));
+    // }
+
+    // private async writeMetrics(exportData: Export) {
+    //     let values: any = {
+    //         headers: ["Merge Requests - General Report"],
+    //         values: {
+    //             "Average Number of Commits Per MR": [exportData.avgNoOfCommitsPerMergeRequest],
+    //             "Average Number of Comments Per MR": [exportData.avgNoOfCommentsPerMergeRequest],
+    //             "Average Number of Conflicts Per MR": [exportData.avgNoOfConflictsPerMergeRequest],
+    //             "Average Number of Unresolved Discussions Per MR": [exportData.avgNoOfUnresolvedDiscussionsPerMergeRequest],
+    //             "Average Number of MRs Per Day": [exportData.avgNoOfMergeRequestsPerDay],
+    //             "Average Number of Merged MRs Per Day": [exportData.avgNoOfMergedMergeRequestsPerDay],
+    //             "Average Number of MRs Per Week": [exportData.avgNoOfMergeRequestsPerWeek],
+    //             "Average Number of Merged MRs Per Week": [exportData.avgNoOfMergedMergeRequestsPerWeek],
+    //         }
+    //     };
+    //     fs.writeFile(`${folderPath}/MRsGeneralReport.json`, JSON.stringify(values, null, 2));
+    // }
 }

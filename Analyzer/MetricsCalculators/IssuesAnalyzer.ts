@@ -57,7 +57,6 @@ export class IssuesAnalyzer {
             this.calculateLifetimeStatistics(issue);
         }
 
-        exportData.setAllIssues(this.noOfAllIssues);
         exportData.setClosedIssues(this.noOfClosedIssues);
         exportData.setLockedIssues(this.noOfLockedIssues);
         exportData.setOpenedIssues(this.noOfOpenedIssues);

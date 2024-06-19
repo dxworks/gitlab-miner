@@ -1,4 +1,4 @@
-import { GitLabGraphQLExtractor } from "../Extractors/GitLabGraphQLExtractor";
+import { GitLabGraphQLExtractor } from "../Extraction/GitLabGraphQLExtractor";
 import { Member } from "../Types/Member";
 import { MergeRequest } from "../Types/MergeRequest";
 import {Commit} from "../Types/Commit";
@@ -34,7 +34,7 @@ export class MergeRequestsAndIssuesProcessor {
 
         await writeDataToJsonFile();
 
-        console.log(cnt);
+        console.log(`Merge Requests result saved. (${cnt} queries)`);
     }
 
     async processIssues(endCursor: string | null) {
@@ -55,7 +55,7 @@ export class MergeRequestsAndIssuesProcessor {
         }
 
         await writeDataToJsonFile();
-        console.log(cnt);
+        console.log(`Issues result saved. (${cnt} queries)`);
     }
 
     private mapMergeRequest(mergeRequest: any): MergeRequest {

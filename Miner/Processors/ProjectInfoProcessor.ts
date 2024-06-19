@@ -1,4 +1,4 @@
-import {GitLabGraphQLExtractor} from "../Extractors/GitLabGraphQLExtractor";
+import {GitLabGraphQLExtractor} from "../Extraction/GitLabGraphQLExtractor";
 import {allData, writeDataToJsonFile} from "../../app";
 import {ProjectInfo} from "../Types/ProjectInfo";
 
@@ -10,12 +10,17 @@ export class ProjectInfoProcessor {
     }
 
     async processProjectInfo() {
-        let projectInfo: any = await this.extractor.getProjectInfo();
+        let projectInfo: any = await this.extractor.getProjectInfo()
+        let teamGraphParameters = await this.extractor.getGraphParameters();
 
         allData.projectInfo = this.mapProjectInfo(projectInfo);
+
+        allData.teamGraphParameters.minLinkValue = teamGraphParameters.minLinkValue;
+        allData.teamGraphParameters.minMemberLinks = teamGraphParameters.minMemberLinks;
+
         await writeDataToJsonFile();
 
-        console.log(`Query ProjectInfo result saved.`);
+        console.log(`\nQuery ProjectInfo result saved.`);
 
     }
 

@@ -1,19 +1,22 @@
-import { GitLabGraphQLExtractor } from "./Miner/Extractors/GitLabGraphQLExtractor";
+import { GitLabGraphQLExtractor } from "./Miner/Extraction/GitLabGraphQLExtractor";
 import fs from "fs/promises";
 import {MembersProcessor} from "./Miner/Processors/MembersProcessor";
 import {MergeRequestsAndIssuesProcessor} from "./Miner/Processors/MergeRequestsAndIssuesProcessor";
 import {ProjectInfoProcessor} from "./Miner/Processors/ProjectInfoProcessor";
 import {Linker} from "./Analyzer/Linker";
 
+console.log('Starting execution...\n');
+
 const configFile = 'config.yml';
-const FILENAME = `Metrics.json`;
+const FILENAME = `allData.json`;
 const extractor: GitLabGraphQLExtractor = new GitLabGraphQLExtractor(configFile);
 
 export let allData: any = {
     projectInfo: {},
     projectMembers: [],
     mergeRequests: [],
-    issues: []
+    issues: [],
+    teamGraphParameters: {},
 };
 
 export async function writeDataToJsonFile() {

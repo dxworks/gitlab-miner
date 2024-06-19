@@ -4,6 +4,7 @@ import {MergeRequest} from "../Models/MergeRequest";
 export class MergeRequestsAnalyzer {
     openCount: number = 0;
     closedCount: number = 0;
+    lockedCount: number = 0;
     mergedCount: number = 0;
     totalLifetimeH: number = 0;
     totalLifetimeD: number = 0;
@@ -19,6 +20,7 @@ export class MergeRequestsAnalyzer {
     totalFirstInteractionLifetimeD: number = 0;
     daysDifference: number = 0;
     weeksDifference: number = 0;
+
     public analyzeMergeRequests(exportData: Export, mergeRequestsMap: Map<String, MergeRequest>) {
 
         for (let [_, mergeRequest] of mergeRequestsMap) {
@@ -28,6 +30,9 @@ export class MergeRequestsAnalyzer {
                     break;
                 case 'closed':
                     this.closedCount++;
+                    break;
+                case 'locked':
+                    this.lockedCount++;
                     break;
                 case 'merged':
                     this.mergedCount++;
@@ -48,6 +53,7 @@ export class MergeRequestsAnalyzer {
 
         exportData.setOpen(this.openCount);
         exportData.setClosed(this.closedCount);
+        exportData.setLocked(this.lockedCount);
         exportData.setMerged(this.mergedCount);
         exportData.setAvgTimeUntilMergingAMergeRequestH((this.totalLifetimeH / this.mergedCount) / (3600 * 1000));
         exportData.setAvgTimeUntilMergingAMergeRequestD((this.totalLifetimeD / this.mergedCount));
@@ -140,7 +146,6 @@ export class MergeRequestsAnalyzer {
     private differenceInDays(date1: Date, date2: Date): number {
         const millisecondsPerDay: number = 1000 * 60 * 60 * 24;
         const timeDifference: number  = Math.abs(date2.getTime() - date1.getTime());
-        //return Math.floor(timeDifference / millisecondsPerDay);
         return timeDifference / millisecondsPerDay;
     }
 }

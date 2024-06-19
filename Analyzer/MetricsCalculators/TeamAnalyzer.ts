@@ -3,47 +3,54 @@ import {MergeRequest} from "../Models/MergeRequest";
 import {Issue} from "../Models/Issue";
 import fs from "fs/promises";
 
+const folderPath = 'results';
+
 export interface TeamNode {
-    username: string | undefined;
-    fullName: string | undefined
+    category: string | undefined;
+    name: string | undefined
 }
 
-export interface TeamEdge {
+export interface TeamLink {
     source: string | undefined;
     target: string | undefined;
-    weight: number;
+    value: number;
 }
 
 export interface TeamInteraction {
     nodes: TeamNode[];
-    edges: TeamEdge[];
+    links: TeamLink[];
 }
+
 export class TeamAnalyzer {
     public teamInteraction: TeamInteraction = {
         nodes: [],
-        edges: []
+        links: []
     };
 
     private createGraph(membersMap: Map<String, Member>) {
         for (let [_, member] of membersMap) {
             this.teamInteraction.nodes.push({
-                username: member.username,
-                fullName: member.name,
+                category: member.username,
+                name: member.username,
             });
 
             for (let [_, colleague] of membersMap) {
                 if(colleague.username !== member.username) {
-                    this.teamInteraction.edges.push({
+                    this.teamInteraction.links.push({
                         source: member.username,
                         target: colleague.username,
-                        weight: 0
+                        value: 0
                     })
                 }
             }
         }
     }
-    public analyzeTeam(membersMap: Map<String, Member>, mergeRequestsMap: Map<String, MergeRequest>, issuesMap: Map<String, Issue>) {
+
+    public analyzeTeam(membersMap: Map<String, Member>, mergeRequestsMap: Map<String, MergeRequest>, issuesMap: Map<String, Issue>, teamGraphParameters: any) {
         this.createGraph(membersMap);
+
+        let minLinkValue = teamGraphParameters.minLinkValue;
+        let minMemberLinks = teamGraphParameters.minMemberLinks;
 
         for (let [_, member] of membersMap) {
 
@@ -53,10 +60,10 @@ export class TeamAnalyzer {
                         mergeRequest.commenters !== undefined &&
                         mergeRequest.reviewers !== undefined &&
                         mergeRequest.approvedBy !== undefined) {
-                        this.updateEdgeWeight(member.username, mergeRequest.assignees, 0.5);
-                        this.updateEdgeWeight(member.username, mergeRequest.reviewers, 1);
-                        this.updateEdgeWeight(member.username, mergeRequest.approvedBy, 2);
-                        this.updateEdgeWeight(member.username, mergeRequest.commenters, 3);
+                        this.updateLinkValue(member.username, mergeRequest.assignees, 1);
+                        this.updateLinkValue(member.username, mergeRequest.reviewers, 2);
+                        this.updateLinkValue(member.username, mergeRequest.commenters, 3);
+                        this.updateLinkValue(member.username, mergeRequest.approvedBy, 4);
                     }
                 }
             }
@@ -64,36 +71,65 @@ export class TeamAnalyzer {
             for (let [_, issue] of issuesMap) {
                 if (issue.author === member.username && member.username !== undefined) {
                     if (issue.assignees !== undefined && issue.commenters !== undefined) {
-                        this.updateEdgeWeight(member.username, issue.assignees, 4);
-                        this.updateEdgeWeight(member.username, issue.commenters, 5);
+                        this.updateLinkValue(member.username, issue.assignees, 1);
+                        this.updateLinkValue(member.username, issue.commenters, 3);
                     }
                 }
             }
         }
 
-        console.log(this.teamInteraction);
-        console.log(this.teamInteraction.nodes.length)
-        console.log(this.teamInteraction.edges.length)
+        this.teamInteraction.links = this.teamInteraction.links.filter((link: TeamLink) => link.value >= minLinkValue);
+        this.teamInteraction.nodes = this.teamInteraction.nodes.filter((node: TeamNode) => {
+            let memberLinks: TeamLink[] = this.teamInteraction.links.filter((link: TeamLink) => link.source === node.name || link.target === node.name);
+            return memberLinks.length >= minMemberLinks;
+        });
 
+        // this.teamInteraction.links = this.teamInteraction.links.filter((link: TeamLink) => link.value >= minLinkValue);
+        //
+        // let validNodes = new Set<string>();
+        // this.teamInteraction.links.forEach((link: TeamLink) => {
+        //     if (link.source !== undefined) {
+        //         validNodes.add(link.source);
+        //     }
+        //     if (link.target !== undefined) {
+        //         validNodes.add(link.target);
+        //     }
+        // });
+        //
+        // this.teamInteraction.nodes = this.teamInteraction.nodes.filter((node: TeamNode) => {
+        //     let memberLinks: TeamLink[] = this.teamInteraction.links.filter((link: TeamLink) => link.source === node.name || link.target === node.name);
+        //     if (node.name !== undefined) {
+        //         return memberLinks.length >= minMemberLinks || validNodes.has(node.name);
+        //     }
+        // });
+
+        //console.log(this.teamInteraction);
+        //console.log(this.teamInteraction.nodes.length)
+        //console.log(this.teamInteraction.links.length)
+        //console.log(minLinkValue, minMemberLinks);
         this.writeGraphToJsonFile();
+
+        console.log('Execution finished successfully!\n');
     }
 
-    private updateEdgeWeight(sourceMember: string, targetMembers: (Member | string)[], interactionWeight: number) {
+    private updateLinkValue(sourceMember: string, targetMembers: (Member | string)[], interactionValue: number) {
         for (let targetMember of targetMembers) {
             let targetUsername: string | undefined = typeof targetMember === 'string' ? targetMember : targetMember.username;
 
-            let edge: TeamEdge | undefined = this.teamInteraction.edges.find((edge: TeamEdge) => edge.source === sourceMember && edge.target === targetUsername);
-            if (edge !== undefined && edge.weight < interactionWeight) {
-                edge.weight++;
+            let link: TeamLink | undefined = this.teamInteraction.links.find((link: TeamLink) => link.source === sourceMember && link.target === targetUsername);
+            if (link !== undefined) { //&& link.value <= interactionValue
+                //link.value++;
+                link.value = link.value + interactionValue;
             }
-            edge = this.teamInteraction.edges.find((edge: TeamEdge) => edge.source === targetUsername && edge.target === sourceMember);
-            if (edge !== undefined && edge.weight < interactionWeight) {
-                edge.weight++;
+            link = this.teamInteraction.links.find((link: TeamLink) => link.source === targetUsername && link.target === sourceMember);
+            if (link !== undefined) { //&& link.value <= interactionValue)
+                //link.value++;
+                link.value = link.value + interactionValue;
             }
         }
     }
 
     private async writeGraphToJsonFile() {
-        fs.writeFile(`TeamGraph.json`, JSON.stringify(this.teamInteraction, null, 2));
+        fs.writeFile(`${folderPath}/TeamGraph.json`, JSON.stringify(this.teamInteraction, null, 2));
     }
 }

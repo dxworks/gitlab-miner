@@ -1,5 +1,5 @@
 import {Member} from "../Types/Member";
-import {GitLabGraphQLExtractor} from "../Extractors/GitLabGraphQLExtractor";
+import {GitLabGraphQLExtractor} from "../Extraction/GitLabGraphQLExtractor";
 import {allData, writeDataToJsonFile} from "../../app";
 
 export class MembersProcessor {
