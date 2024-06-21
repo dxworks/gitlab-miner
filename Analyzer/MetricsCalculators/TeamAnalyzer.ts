@@ -84,29 +84,6 @@ export class TeamAnalyzer {
             return memberLinks.length >= minMemberLinks;
         });
 
-        // this.teamInteraction.links = this.teamInteraction.links.filter((link: TeamLink) => link.value >= minLinkValue);
-        //
-        // let validNodes = new Set<string>();
-        // this.teamInteraction.links.forEach((link: TeamLink) => {
-        //     if (link.source !== undefined) {
-        //         validNodes.add(link.source);
-        //     }
-        //     if (link.target !== undefined) {
-        //         validNodes.add(link.target);
-        //     }
-        // });
-        //
-        // this.teamInteraction.nodes = this.teamInteraction.nodes.filter((node: TeamNode) => {
-        //     let memberLinks: TeamLink[] = this.teamInteraction.links.filter((link: TeamLink) => link.source === node.name || link.target === node.name);
-        //     if (node.name !== undefined) {
-        //         return memberLinks.length >= minMemberLinks || validNodes.has(node.name);
-        //     }
-        // });
-
-        //console.log(this.teamInteraction);
-        //console.log(this.teamInteraction.nodes.length)
-        //console.log(this.teamInteraction.links.length)
-        //console.log(minLinkValue, minMemberLinks);
         this.writeGraphToJsonFile();
 
         console.log('Execution finished successfully!\n');
@@ -117,13 +94,11 @@ export class TeamAnalyzer {
             let targetUsername: string | undefined = typeof targetMember === 'string' ? targetMember : targetMember.username;
 
             let link: TeamLink | undefined = this.teamInteraction.links.find((link: TeamLink) => link.source === sourceMember && link.target === targetUsername);
-            if (link !== undefined) { //&& link.value <= interactionValue
-                //link.value++;
+            if (link !== undefined) {
                 link.value = link.value + interactionValue;
             }
             link = this.teamInteraction.links.find((link: TeamLink) => link.source === targetUsername && link.target === sourceMember);
-            if (link !== undefined) { //&& link.value <= interactionValue)
-                //link.value++;
+            if (link !== undefined) {
                 link.value = link.value + interactionValue;
             }
         }

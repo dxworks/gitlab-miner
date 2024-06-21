@@ -115,7 +115,6 @@ export class Linker {
                 noOfMediumIssuesAuthored: 0,
                 noOfLowIssuesAuthored: 0,
                 noOfUnknownIssuesAuthored: 0,
-                //avgNoOfNotesPerAuthoredMergeRequest: 0,
                 avgNoOfDiscussionsPerAuthoredMergeRequest: 0,
                 avgNoOfFilesChangedPerAuthoredMergeRequest: 0,
                 avgNoOfChangesPerAuthoredMergeRequest: 0,
@@ -254,9 +253,9 @@ export class Linker {
         }
 
         const exportData: Export = new Export();
-        exportData.setMergeRequests(mergeRequestsMap.size);
-        exportData.setNoOfIssues(issuesMap.size);
-        exportData.setNoOfMembers(membersMap.size);
+        exportData.noOfMergeRequests = mergeRequestsMap.size;
+        exportData.noOfIssues = issuesMap.size;
+        exportData.noOfMembers = membersMap.size;
 
         this.mergeRequestAnalyzer.analyzeMergeRequests(exportData, mergeRequestsMap);
         this.issuesAnalyzer.analyzeIssues(exportData, issuesMap);
@@ -267,48 +266,6 @@ export class Linker {
         this.writeMergeRequestsTypes(exportData);
         this.writeIssuesTypes(exportData);
         this.writeIssuesSeverity(exportData);
-
-        // this.writeAvgTime(exportData);
-        // this.writeMetrics(exportData);
-
-        // Visualize membersMap
-        // console.log("----------------");
-        // console.log('| Members Map: |');
-        // console.log("----------------");
-        // membersMap.forEach((member) => {
-        //     console.log(member.username);
-        //     console.log('Associated(assigned to) Merge Requests:', member.mergeRequests?.length);
-        //     console.log('Associated(assigned to) Issues:', member.issues?.length);
-        //     console.log('#No of Authored Issues:', member.noOfAuthoredIssues);
-        //     console.log('#No of All Issues Authored:', member.noOfAllIssuesAuthored);
-        //     console.log('#No of Closed Issues Authored:', member.noOfClosedIssuesAuthored);
-        //     console.log('#No of Locked Issues Authored:', member.noOfLockedIssuesAuthored);
-        //     console.log('#No of Opened Issues Authored:', member.noOfOpenedIssuesAuthored);
-        //     console.log('#No of Critical Severity Issues Authored:', member.noOfCriticalIssuesAuthored);
-        //     console.log('#No of High Severity Issues Authored:', member.noOfHighIssuesAuthored);
-        //     console.log('#No of Medium Severity Issues Authored:', member.noOfMediumIssuesAuthored);
-        //     console.log('#No of Low Severity Issues Authored:', member.noOfLowIssuesAuthored);
-        //     console.log('#No of Unknown Severity Issues Authored:', member.noOfUnknownIssuesAuthored);
-        //     console.log('#No of Authored Merge Requests:', member.noOfAuthoredMergeRequests);
-        //     console.log('#No of Others Merge Requests User commented On:', member.noOfOthersMergeRequestsCommentedOn);
-        //     console.log('#No of Merged Merge Requests:', member.noOfMergedMergeRequests);
-        //     console.log('#No of Closed Without Merge Merge Requests:', member.noOfClosedWithoutMergeMergeRequests);
-        //     console.log('Avg no of Notes per Authored MR:', member.avgNoOfNotesPerAuthoredMergeRequest);
-        //     console.log('Avg no of Discussions per Authored MR:', member.avgNoOfDiscussionsPerAuthoredMergeRequest);
-        //     console.log('Avg no of Files Changed per Authored MR:', member.avgNoOfFilesChangedPerAuthoredMergeRequest);
-        //     console.log('Avg no of Changes per Authored MR:', member.avgNoOfChangesPerAuthoredMergeRequest);
-        //     console.log('Avg no of Additions per Authored MR:', member.avgNoOfAdditionsPerAuthoredMergeRequest);
-        //     console.log('Avg no of Deletions per Authored MR:', member.avgNoOfDeletionsPerAuthoredMergeRequest);
-        //     console.log('Commented on Others Merge Requests Proc:', member.commentedOnOthersMergeRequestsProc);
-        //     console.log('Avg no of Notes on Others MR:', member.avgNoOfNotesOnOthersMergeRequest);
-        //     console.log('Commented on Own Merge Requests Proc:', member.commentedOnOwnMergeRequestsProc);
-        //     console.log('Avg no of Notes on Authored MR:', member.avgNoOfNotesOnAuthoredMergeRequest);
-        //     console.log('------------------');
-        // });
-        //
-        // console.log(exportData);
-
-
     }
 
     private async writeProjectMetricsToJsonFile(exportData: Export) {
@@ -350,32 +307,4 @@ export class Linker {
         };
         fs.writeFile(`${folderPath}/IssuesSeverity.json`, JSON.stringify(values, null, 2));
     }
-
-    // private async writeAvgTime(exportData: Export) {
-    //     let values: any = {
-    //         headers: ["Hours", "Days"],
-    //         values: {
-    //             "Average Time Until Merging a Merge Request": [exportData.avgTimeUntilMergingAMergeRequestH, exportData.avgTimeUntilMergingAMergeRequestD],
-    //             "Average Time Until First Interaction": [exportData.avgTimeUntilFirstInteractionH, exportData.avgTimeUntilFirstInteractionD],
-    //         }
-    //     };
-    //     fs.writeFile(`${folderPath}/MRsAverageTime.json`, JSON.stringify(values, null, 2));
-    // }
-
-    // private async writeMetrics(exportData: Export) {
-    //     let values: any = {
-    //         headers: ["Merge Requests - General Report"],
-    //         values: {
-    //             "Average Number of Commits Per MR": [exportData.avgNoOfCommitsPerMergeRequest],
-    //             "Average Number of Comments Per MR": [exportData.avgNoOfCommentsPerMergeRequest],
-    //             "Average Number of Conflicts Per MR": [exportData.avgNoOfConflictsPerMergeRequest],
-    //             "Average Number of Unresolved Discussions Per MR": [exportData.avgNoOfUnresolvedDiscussionsPerMergeRequest],
-    //             "Average Number of MRs Per Day": [exportData.avgNoOfMergeRequestsPerDay],
-    //             "Average Number of Merged MRs Per Day": [exportData.avgNoOfMergedMergeRequestsPerDay],
-    //             "Average Number of MRs Per Week": [exportData.avgNoOfMergeRequestsPerWeek],
-    //             "Average Number of Merged MRs Per Week": [exportData.avgNoOfMergedMergeRequestsPerWeek],
-    //         }
-    //     };
-    //     fs.writeFile(`${folderPath}/MRsGeneralReport.json`, JSON.stringify(values, null, 2));
-    // }
 }

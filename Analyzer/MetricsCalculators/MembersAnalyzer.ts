@@ -19,10 +19,6 @@ export class MembersAnalyzer {
             let noOfNotesOnOthersMergeRequest: number = 0;
             let noOfAuthoredMergeRequestsWhereMemberCommented: number = 0;
             let noOfNotesOnAuthoredMergeRequest: number = 0;
-            let closedd: number = 0;
-            let merged: number = 0;
-            let opened: number = 0;
-            let locked: number = 0;
 
             for (let [_, mergeRequest] of mergeRequestsMap) {
                 if (mergeRequest.author === member.username) {
@@ -30,17 +26,7 @@ export class MembersAnalyzer {
 
                     if (mergeRequest.state === 'closed') {
                         member.noOfClosedWithoutMergeMergeRequests++;
-                        //closedd++;
                     }
-                    // if (mergeRequest.state === 'merged') {
-                    //     merged++
-                    // }
-                    // if (mergeRequest.state === 'opened') {
-                    //     opened++
-                    // }
-                    // if (mergeRequest.state === 'locked') {
-                    //     locked++;
-                    // }
 
                     if (mergeRequest.userNotesCount !== undefined) {
                         totalNotesCount += mergeRequest.userNotesCount;
@@ -73,8 +59,6 @@ export class MembersAnalyzer {
                 if (mergeRequest.mergeUser === member.username) {
                     member.noOfMergedMergeRequests++;
                 }
-
-                //console.log(`Closed: ${closedd}, Merged: ${merged}, Opened: ${opened}, Locked: ${locked}`);
             }
 
             member.totalNotesCount = totalNotesCount;
@@ -85,7 +69,6 @@ export class MembersAnalyzer {
             member.totalDeletions = totalDeletions;
 
             if (member.noOfAuthoredMergeRequests !== 0) {
-                //member.avgNoOfNotesPerAuthoredMergeRequest = totalNotesCount / member.noOfAuthoredMergeRequests;
                 member.avgNoOfDiscussionsPerAuthoredMergeRequest = totalDiscussionsCount / member.noOfAuthoredMergeRequests;
                 member.avgNoOfFilesChangedPerAuthoredMergeRequest = totalFilesChanged / member.noOfAuthoredMergeRequests;
                 member.avgNoOfChangesPerAuthoredMergeRequest = totalChanges / member.noOfAuthoredMergeRequests;
@@ -124,10 +107,6 @@ export class MembersAnalyzer {
             this.writeGeneralStatisticsToJsonFile(member, count);
             this.authoredIssuesTypes(member, count);
             this.authoredIssuesSeverity(member, count);
-
-            // this.writeGeneralReport(member, count);
-            // this.writeTotalsReport(member, count);
-            // this.writeCommentsReport(member, count);
         }
     }
 
@@ -257,77 +236,4 @@ export class MembersAnalyzer {
         };
         fs.writeFile(`${folderPath}/${count}_AuthoredIssuesSeverity.json`, JSON.stringify(values, null, 2));
     }
-
-    // private async writeGeneralReport (member: Member, count: number) {
-    //     let values: any = {
-    //         headers: ["Member - General Report"],
-    //         values: {
-    //             "Notes per Authored MR" : [member.avgNoOfNotesPerAuthoredMergeRequest],
-    //             "Discussions per Authored MR": [member.avgNoOfDiscussionsPerAuthoredMergeRequest],
-    //             "Files Changes per Authored MR": [member.avgNoOfFilesChangedPerAuthoredMergeRequest],
-    //             "Changes per Authored MR": [member.avgNoOfChangesPerAuthoredMergeRequest],
-    //             "Additions per Authored MR": [member.avgNoOfAdditionsPerAuthoredMergeRequest],
-    //             "Deletions per Authored MR": [member.avgNoOfDeletionsPerAuthoredMergeRequest],
-    //             "Notes On Authored MR": [member.avgNoOfNotesOnAuthoredMergeRequest],
-    //             "Notes On Others MR":  [member.avgNoOfNotesOnOthersMergeRequest],
-    //         }
-    //     };
-    //     fs.writeFile(`${folderPath}/${count}_GeneralReport.json`, JSON.stringify(values, null, 2));
-    // }
-
-    // private async writeTotalsReport (member: Member, count: number) {
-    //     let values: any = {
-    //         headers: ["Member - Totals Report"],
-    //         values: {
-    //             "Total Notes Count": [member.totalNotesCount],
-    //             "Total Discussions Count": [member.totalDiscussionsCount],
-    //             "Total Files Changed": [member.totalFilesChanged],
-    //             "Total Changes": [member.totalChanges],
-    //             "Total Additions": [member.totalAdditions],
-    //             "Total Deletions": [member.totalDeletions],
-    //         }
-    //     };
-    //     fs.writeFile(`${folderPath}/${count}_TotalsReport.json`, JSON.stringify(values, null, 2));
-    // }
-
-    // private async writeCommentsReport (member: Member, count: number) {
-    //     let values: any = {
-    //         "nodes": [
-    //         {
-    //             "name": "Node Group 1",
-    //             "value": 100,
-    //             "category": "1",
-    //             "children": [
-    //                 {
-    //                     "name": "Commented On Own Merge Requests %",
-    //                     "value": (member.commentedOnOwnMergeRequestsProc * 100),
-    //                     "category": "1",
-    //                 },
-    //                 {
-    //                     "name": "Difference %",
-    //                     "value": (100-(member.commentedOnOwnMergeRequestsProc * 100)),
-    //                     "category": "2",
-    //                 },
-    //             ]
-    //         },
-    //         {
-    //             "name": "Node group 2",
-    //             "value": 100,
-    //             "category": "3",
-    //             "children": [
-    //                 {
-    //                     "name": "Commented On Others Merge Requests %",
-    //                     "value": (member.commentedOnOthersMergeRequestsProc * 100),
-    //                     "category": "3",
-    //                 },
-    //                 {
-    //                     "name": "Difference %",
-    //                     "value": (100-(member.commentedOnOthersMergeRequestsProc * 100)),
-    //                     "category": "4",
-    //                 }
-    //             ]
-    //         }],};
-    //
-    //     fs.writeFile(`${folderPath}/${count}_CommentsReport.json`, JSON.stringify(values, null, 2));
-    // }
 }

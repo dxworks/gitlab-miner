@@ -57,16 +57,16 @@ export class IssuesAnalyzer {
             this.calculateLifetimeStatistics(issue);
         }
 
-        exportData.setClosedIssues(this.noOfClosedIssues);
-        exportData.setLockedIssues(this.noOfLockedIssues);
-        exportData.setOpenedIssues(this.noOfOpenedIssues);
-        exportData.setCritical(this.noOfCriticalIssues);
-        exportData.setHigh(this.noOfHighIssues);
-        exportData.setMedium(this.noOfMediumIssues);
-        exportData.setLow(this.noOfLowIssues);
-        exportData.setUnknown(this.noOfUnknownIssues);
-        exportData.setAvgIssueResolveTimeD(this.totalIssuesLifetimeD / this.noOfClosedIssues);
-        exportData.setAvgIssueResolveTimeH((this.totalIssuesLifetimeH / this.noOfClosedIssues) / (3600 * 1000));
+        exportData.noOfClosedIssues = this.noOfClosedIssues;
+        exportData.noOfLockedIssues = this.noOfLockedIssues;
+        exportData.noOfOpenIssues = this.noOfOpenedIssues;
+        exportData.noOfCriticalSeverityIssues = this.noOfCriticalIssues;
+        exportData.noOfHighSeverityIssues = this.noOfHighIssues;
+        exportData.noOfMediumSeverityIssues = this.noOfMediumIssues;
+        exportData.noOfLowSeverityIssues = this.noOfLowIssues;
+        exportData.noOfUnknownSeverityIssues = this.noOfUnknownIssues;
+        exportData.avgIssueResolveTimeD = (this.totalIssuesLifetimeD / this.noOfClosedIssues);
+        exportData.avgIssueResolveTimeH = (this.totalIssuesLifetimeH / this.noOfClosedIssues) / (3600 * 1000);
     }
 
     private calculateLifetimeStatistics(issue: Issue) {

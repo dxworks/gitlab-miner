@@ -51,22 +51,22 @@ export class MergeRequestsAnalyzer {
             this.calculateNoWithConflicts(mergeRequest);
         }
 
-        exportData.setOpen(this.openCount);
-        exportData.setClosed(this.closedCount);
-        exportData.setLocked(this.lockedCount);
-        exportData.setMerged(this.mergedCount);
-        exportData.setAvgTimeUntilMergingAMergeRequestH((this.totalLifetimeH / this.mergedCount) / (3600 * 1000));
-        exportData.setAvgTimeUntilMergingAMergeRequestD((this.totalLifetimeD / this.mergedCount));
-        exportData.setAvgNoOfCommitsPerMergeRequest(this.commitCountSum / (mergeRequestsMap.size));
-        exportData.setAvgNoOfCommentsPerMergeRequest(this.commentsSum / (mergeRequestsMap.size));
-        exportData.setAvgTimeUntilFirstInteractionD(this.totalFirstInteractionLifetimeD / this.interactionCount);
-        exportData.setAvgTimeUntilFirstInteractionH((this.totalFirstInteractionLifetimeH / this.interactionCount) / (3600 * 1000));
-        exportData.setAvgNoOfConflictsPerMergeRequest(this.withConflictsCount / this.openCount);
-        exportData.setAvgNoOfMergeRequestsPerDay(mergeRequestsMap.size / this.daysDifference);
-        exportData.setAvgNoOfMergeRequestsPerWeek(mergeRequestsMap.size / this.weeksDifference);
-        exportData.setAvgNoOfMergedMergeRequestsPerDay(this.mergedCount / this.daysDifference);
-        exportData.setAvgNoOfMergedMergeRequestsPerWeek(this.mergedCount / this.weeksDifference);
-        exportData.setAvgNoOfUnresolvedDiscussionsPerMergeRequest(this.unresolvedDiscussionsReport / this.noOfMergeRequestsWithDiscussions);
+        exportData.noOfOpenMergeRequests = this.openCount;
+        exportData.noOfClosedMergeRequests = this.closedCount;
+        exportData.noOfLockedMergeRequests = this.lockedCount;
+        exportData.noOfMergedMergeRequests = this.mergedCount;
+        exportData.avgTimeUntilMergingAMergeRequestH = (this.totalLifetimeH / this.mergedCount) / (3600 * 1000);
+        exportData.avgTimeUntilMergingAMergeRequestD = (this.totalLifetimeD / this.mergedCount);
+        exportData.avgNoOfCommitsPerMergeRequest = (this.commitCountSum / (mergeRequestsMap.size));
+        exportData.avgNoOfCommentsPerMergeRequest = (this.commentsSum / (mergeRequestsMap.size));
+        exportData.avgTimeUntilFirstInteractionD = (this.totalFirstInteractionLifetimeD / this.interactionCount);
+        exportData.avgTimeUntilFirstInteractionH = (this.totalFirstInteractionLifetimeH / this.interactionCount) / (3600 * 1000);
+        exportData.avgNoOfConflictsPerMergeRequest = (this.withConflictsCount / this.openCount);
+        exportData.avgNoOfMergeRequestsPerDay = (mergeRequestsMap.size / this.daysDifference);
+        exportData.avgNoOfMergeRequestsPerWeek = (mergeRequestsMap.size / this.weeksDifference);
+        exportData.avgNoOfMergedMergeRequestsPerDay = (this.mergedCount / this.daysDifference);
+        exportData.avgNoOfMergedMergeRequestsPerWeek = (this.mergedCount / this.weeksDifference);
+        exportData.avgNoOfUnresolvedDiscussionsPerMergeRequest = (this.unresolvedDiscussionsReport / this.noOfMergeRequestsWithDiscussions);
     }
 
     private calculateLifetimeStatistics(mergeRequest: MergeRequest) {
