@@ -12,11 +12,11 @@ const FILENAME = `allData.json`;
 const extractor: GitLabGraphQLExtractor = new GitLabGraphQLExtractor(configFile);
 
 export let allData: any = {
+    teamGraphParameters: {},
     projectInfo: {},
     projectMembers: [],
     mergeRequests: [],
     issues: [],
-    teamGraphParameters: {},
 };
 
 export async function writeDataToJsonFile() {
