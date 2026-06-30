@@ -91,7 +91,70 @@ Inside the main folder of the application the allData.json file can be found and
 - ProjectInfo.json containing general metrics regarding the project
 - MembersModel.json containg metrics related to each and every member
 - TeamGraph.json containing the team collaboration and interactions graph
-- visualizations in numeorus JSON files for all of the above 
+- visualizations in numeorus JSON files for all of the above  
+
+## Method C — Build-Your-Own Agent
+
+Method C is a developer-orchestrated analysis agent. Unlike a fully model-driven or
+agent-driven approach, the execution pipeline is explicitly controlled by the application:
+data loading, prompt construction, model invocation, and result processing run in a defined
+sequence, while the model retains control over the reasoning and over when the analysis ends.
+The model never reads the raw data directly — it requests computations by emitting TypeScript
+queries, which the application executes against a structured project context and feeds back.
+
+### Technologies
+
+- **Node.js** + **TypeScript**
+
+### Prerequisites
+
+Export an API key for the chosen provider before running. The key is read from the
+`PROVIDER_API_KEY` environment variable:
+
+```bash
+export PROVIDER_API_KEY="your-api-key-here"
+```
+
+### Running
+
+Start the agent with the npm script, specifying the provider and model:
+
+```bash
+npm run method-c -- --provider <provider> --model <model>
+```
+
+**Example:**
+
+```bash
+export PROVIDER_API_KEY="sk-..."
+npm run method-c -- --provider openai --model gpt-5.5-pro
+```
+
+Supported providers: `openai`, `anthropic`. The provider is abstracted behind a common
+`LLMProvider` interface, so the same execution logic works regardless of the underlying model.
+
+
+### Input
+
+The agent operates on a preprocessed project context (`ProjectContext` / `ctx`), built upstream
+by the analyzer/linker from the raw GitHub export — not on the raw files directly.
+
+### Output
+
+Each run produces, under `results/Method_C/`:
+
+- **`MethodC_Report.md`** — the final analysis report.
+- **`MethodC_RunMeta.json`** — execution metadata: tool calls, intermediate steps, and any
+  failures, for visibility and debugging.
+
+### Notes
+
+- The iteration loop is controlled at the application level, but the decision to continue or
+  stop remains with the model.
+- The pipeline incorporates scalable data-handling strategies (avoiding full JSON serialization,
+  reducing graph density by excluding zero-weight links, controlled memory usage) for robustness
+  on large repositories.
+
 
 ## Contact
 
